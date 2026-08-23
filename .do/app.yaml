@@ -40,6 +40,9 @@ services:
       - key: AUTH_TRUST_HOST
         scope: RUN_TIME
         value: "true"
+      - key: AUTH_URL
+        scope: RUN_TIME
+        value: https://wattbund.de
       - key: AUTH_RESEND_KEY
         scope: RUN_TIME
         type: SECRET
