@@ -11,18 +11,16 @@ export function SiteHeader({ compact = false }: { compact?: boolean }) {
         <span>WattBund</span>
       </Link>
       <nav className="desktop-nav" aria-label="Hauptnavigation">
-        <Link href="/solar-map"><MapTrifold size={18} weight="bold" />Solar Map</Link>
-        <Link href="/#prinzip">So funktioniert&apos;s</Link>
-        <Link href="/#community">Community</Link>
-        <Link href="/konto" className="nav-account"><UserCircle size={19} />Konto</Link>
+        <Link href="/"><MapTrifold size={18} weight="bold" />Solar Map</Link>
+        <Link href="/legal">Rechtliches</Link>
+        <Link href="/konto" className="nav-account"><UserCircle size={19} />Mitmachen</Link>
       </nav>
       <details className="mobile-nav">
         <summary aria-label="Navigation öffnen"><List size={25} /></summary>
         <nav aria-label="Mobile Navigation">
-          <Link href="/solar-map">Solar Map</Link>
-          <Link href="/#prinzip">So funktioniert&apos;s</Link>
-          <Link href="/#community">Community</Link>
-          <Link href="/konto">Konto</Link>
+          <Link href="/">Solar Map</Link>
+          <Link href="/konto">Mitmachen</Link>
+          <Link href="/legal">Rechtliches</Link>
         </nav>
       </details>
     </header>
