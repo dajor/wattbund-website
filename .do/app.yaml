@@ -1,0 +1,82 @@
+name: wattbund-app
+region: fra
+
+domains:
+  - domain: wattbund.de
+    type: PRIMARY
+  - domain: www.wattbund.de
+    type: ALIAS
+  - domain: wattbund.com
+    type: ALIAS
+    zone: wattbund.com
+  - domain: www.wattbund.com
+    type: ALIAS
+    zone: wattbund.com
+
+services:
+  - name: wattbund-web
+    github:
+      repo: dajor/wattbund-website
+      branch: main
+      deploy_on_push: true
+    environment_slug: node-js
+    build_command: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    run_command: pnpm start
+    http_port: 3000
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    health_check:
+      http_path: /api/health
+    routes:
+      - path: /
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        type: SECRET
+        value: ${dev-db-680212.DATABASE_URL}
+      - key: AUTH_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: AUTH_RESEND_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: EMAIL_FROM
+        scope: RUN_TIME
+        value: WattBund <noreply@wattbund.de>
+      - key: ADMIN_EMAILS
+        scope: RUN_TIME
+        type: SECRET
+      - key: NEXT_PUBLIC_MAPTILER_API_KEY
+        scope: BUILD_TIME
+        type: SECRET
+      - key: MAPTILER_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: LOCATION_ENCRYPTION_KEY
+        scope: RUN_TIME
+        type: SECRET
+
+jobs:
+  - name: database-migrate
+    kind: PRE_DEPLOY
+    github:
+      repo: dajor/wattbund-website
+      branch: main
+    environment_slug: node-js
+    build_command: corepack enable && pnpm install --frozen-lockfile
+    run_command: pnpm db:migrate && pnpm db:seed
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        type: SECRET
+        value: ${dev-db-680212.DATABASE_URL}
+
+databases:
+  - name: dev-db-680212
+    engine: PG
+    version: "17"
+    production: false
+
+alerts:
+  - rule: DEPLOYMENT_FAILED
+  - rule: DOMAIN_FAILED

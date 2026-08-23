@@ -1,0 +1,22 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { AdminProfiles } from "@/components/admin-profiles";
+import { SiteHeader } from "@/components/site-header";
+
+export const metadata: Metadata = { title: "Administration" };
+
+export default async function AdminPage() {
+  const session = await auth();
+  if (!session?.user) redirect("/anmelden");
+  if (session.user.role !== "admin") redirect("/konto");
+  return (
+    <>
+      <SiteHeader />
+      <main className="admin-layout">
+        <header><p>Administration</p><h1>Community-Profile prüfen</h1><span>Nur freiwillige Angaben werden veröffentlicht. Adressen bleiben verschlüsselt.</span></header>
+        <AdminProfiles />
+      </main>
+    </>
+  );
+}

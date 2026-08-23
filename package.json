@@ -1,0 +1,50 @@
+{
+  "name": "wattbund-solar-map",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "import:lod2": "python3 scripts/import-lod2.py",
+    "import:mastr": "tsx scripts/import-mastr.ts"
+  },
+  "dependencies": {
+    "@auth/drizzle-adapter": "1.11.3",
+    "@phosphor-icons/react": "2.1.10",
+    "drizzle-orm": "0.45.2",
+    "maplibre-gl": "6.5.0",
+    "next": "16.3.2",
+    "next-auth": "5.0.0-beta.32",
+    "pg": "8.23.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "resend": "6.22.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "^22.15.0",
+    "@types/pg": "8.23.1",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "drizzle-kit": "0.31.10",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "16.3.2",
+    "tailwindcss": "4.3.3",
+    "tsx": "4.23.12",
+    "typescript": "^5.9.0",
+    "vitest": "4.1.11"
+  },
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
