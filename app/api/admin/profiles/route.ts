@@ -15,7 +15,7 @@ export async function GET() {
     `SELECT p.id, p.display_name, p.role, p.description, p.pv_status, p.capacity_kwp,
       p.status, p.submitted_at, r.name AS region_name, u.email
      FROM profiles p JOIN regions r ON r.id = p.region_id JOIN users u ON u.id = p.user_id
-     WHERE p.status IN ('pending', 'rejected') ORDER BY p.submitted_at ASC NULLS LAST`
+     WHERE p.status = 'pending' ORDER BY p.submitted_at ASC NULLS LAST`
   );
   return NextResponse.json({ profiles: result.rows, configured: true });
 }
@@ -32,7 +32,8 @@ export async function POST(request: Request) {
     await client.query("BEGIN");
     const nextStatus = decision === "approve" ? "published" : "rejected";
     const update = await client.query(
-      `UPDATE profiles SET status = $1, published_at = CASE WHEN $1 = 'published' THEN now() ELSE NULL END,
+      `UPDATE profiles SET status = $1::profile_status,
+       published_at = CASE WHEN $1::profile_status = 'published'::profile_status THEN now() ELSE NULL END,
        updated_at = now() WHERE id = $2 AND status = 'pending' RETURNING id`,
       [nextStatus, profileId]
     );
