@@ -13,8 +13,9 @@ export function SiteFooter() {
         <p>Lokal erzeugt. Lokal genutzt.</p>
       </div>
       <div className="footer-links">
+        <Link href="/#personas">Für wen</Link>
         <Link href="/solar-map">Solar Map</Link>
-        <Link href="/konto">Konto</Link>
+        <Link href="/konto">Mitmachen</Link>
         <Link href="/legal">Impressum & Datenschutz</Link>
       </div>
       <small>© 2026 WattBund. Orientierungswerte, keine Anlagenplanung.</small>
