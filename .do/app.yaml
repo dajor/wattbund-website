@@ -33,7 +33,7 @@ services:
       - key: DATABASE_URL
         scope: RUN_TIME
         type: SECRET
-        value: ${dev-db-680212.DATABASE_URL}
+        value: ${solar-map-db.DATABASE_URL}
       - key: AUTH_SECRET
         scope: RUN_TIME
         type: SECRET
@@ -71,10 +71,10 @@ jobs:
       - key: DATABASE_URL
         scope: RUN_TIME
         type: SECRET
-        value: ${dev-db-680212.DATABASE_URL}
+        value: ${solar-map-db.DATABASE_URL}
 
 databases:
-  - name: dev-db-680212
+  - name: solar-map-db
     engine: PG
     version: "17"
     production: false
