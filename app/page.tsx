@@ -36,7 +36,7 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
-          <figure className="campaign-hero-media campaign-enter campaign-enter-late">
+          <figure className="campaign-hero-media">
             <Image
               src={regionImage}
               alt="Solar vernetzte Gemeinde als gemeinsame WattBund Region"

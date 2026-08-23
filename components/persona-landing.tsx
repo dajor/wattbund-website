@@ -26,7 +26,7 @@ export function PersonaLanding({ persona }: { persona: Persona }) {
               </Link>
             </div>
           </div>
-          <figure className="persona-hero-media campaign-enter campaign-enter-late">
+          <figure className="persona-hero-media">
             <Image
               src={persona.image}
               alt={persona.imageAlt}
