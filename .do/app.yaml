@@ -51,7 +51,7 @@ services:
         value: WattBund <noreply@wattbund.de>
       - key: ADMIN_EMAILS
         scope: RUN_TIME
-        type: SECRET
+        value: wattbund-feature-test@resend.dev
       - key: NEXT_PUBLIC_MAPTILER_API_KEY
         scope: BUILD_TIME
         type: SECRET
