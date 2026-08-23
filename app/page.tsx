@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MapTrifold } from "@phosphor-icons/react/dist/ssr";
-import regionImage from "@/assets/personas/region.jpg";
+import regionImage from "@/assets/personas/region-offen.jpg";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { personas } from "@/lib/personas";
@@ -39,7 +39,7 @@ export default function HomePage() {
           <figure className="campaign-hero-media">
             <Image
               src={regionImage}
-              alt="Solar vernetzte Gemeinde als gemeinsame WattBund Region"
+              alt="Menschen und Solardächer in einer regionalen Energie-Community"
               priority
               sizes="(max-width: 860px) 100vw, 48vw"
             />
