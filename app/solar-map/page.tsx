@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: "Entdecke Solarpotenzial und lokale Energy Communities in teilnehmenden Regionen."
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function SolarMapPage() {
   const regions = await listRegions();
   return (
