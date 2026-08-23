@@ -328,8 +328,8 @@ function profilesToGeoJson(profiles: PublicProfile[]) {
   };
 }
 
-function formatNumber(value: number) { return value ? value.toLocaleString("de-DE") : "Demo"; }
-function formatEnergy(value: number) { return value ? `${Math.round(value).toLocaleString("de-DE")} kWp` : "Demo"; }
+function formatNumber(value: number) { return Number.isFinite(value) ? value.toLocaleString("de-DE") : "–"; }
+function formatEnergy(value: number) { return Number.isFinite(value) ? `${Math.round(value).toLocaleString("de-DE")} kWp` : "–"; }
 function roleLabel(role: PublicProfile["role"]) {
   return { producer: "Erzeuger", consumer: "Verbraucher", business: "Unternehmen", partner: "Partner" }[role];
 }
