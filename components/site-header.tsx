@@ -13,6 +13,7 @@ export function SiteHeader({ compact = false }: { compact?: boolean }) {
       <nav className="desktop-nav" aria-label="Hauptnavigation">
         <Link href="/#personas">Für wen</Link>
         <Link href="/solar-map"><MapTrifold size={18} weight="bold" />Solar Map</Link>
+        <Link href="/region-wuenschen">Region wünschen</Link>
         <Link href="/konto" className="nav-account"><UserCircle size={19} />Mitmachen</Link>
       </nav>
       <details className="mobile-nav">
@@ -20,6 +21,7 @@ export function SiteHeader({ compact = false }: { compact?: boolean }) {
         <nav aria-label="Mobile Navigation">
           <Link href="/#personas">Für wen</Link>
           <Link href="/solar-map">Solar Map</Link>
+          <Link href="/region-wuenschen">Region wünschen</Link>
           <Link href="/konto">Mitmachen</Link>
           <Link href="/legal">Rechtliches</Link>
         </nav>

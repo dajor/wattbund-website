@@ -13,6 +13,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
+    "db:cleanup-interests": "tsx scripts/cleanup-region-interests.ts",
     "import:lod2": "python3 scripts/import-lod2.py",
     "import:mastr": "tsx scripts/import-mastr.ts"
   },

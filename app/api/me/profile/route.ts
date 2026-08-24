@@ -56,6 +56,7 @@ export async function PATCH(request: Request) {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
+      const existingProfile = await client.query("SELECT 1 FROM profiles WHERE user_id = $1 LIMIT 1", [session.user.id]);
       const profileResult = await client.query(
         `INSERT INTO profiles (user_id, region_id, display_name, role, description, pv_status, capacity_kwp, status, publish_consent)
          VALUES ($1, $2, $3, $4, $5, $6, $7, 'draft', $8)
@@ -87,6 +88,9 @@ export async function PATCH(request: Request) {
         `INSERT INTO consents (user_id, kind, version, granted) VALUES ($1, 'public-profile', '2026-08-23', true)`,
         [session.user.id]
       );
+      if (!existingProfile.rowCount) {
+        await client.query(`INSERT INTO funnel_events (name, source_route) VALUES ('profile_created', '/konto')`);
+      }
       await client.query("COMMIT");
       return NextResponse.json({ profileId, status: "draft" });
     } catch (error) {

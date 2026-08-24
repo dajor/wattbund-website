@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle, MapTrifold } from "@phosphor-icons/react/dist/
 import type { Persona } from "@/lib/personas";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { FunnelLink } from "@/components/funnel-link";
 
 export function PersonaLanding({ persona }: { persona: Persona }) {
   return (
@@ -16,10 +17,10 @@ export function PersonaLanding({ persona }: { persona: Persona }) {
             <h1>{persona.headline}</h1>
             <p className="campaign-lead">{persona.lead}</p>
             <div className="campaign-actions">
-              <Link href={persona.primaryHref} className="campaign-button campaign-button-primary">
+              <FunnelLink href={persona.primaryHref} persona={persona.slug} sourceRoute={`/fuer/${persona.slug}`} className="campaign-button campaign-button-primary">
                 {persona.primaryLabel}
                 <ArrowRight size={19} weight="bold" aria-hidden="true" />
-              </Link>
+              </FunnelLink>
               <Link href="/solar-map" className="campaign-button campaign-button-secondary">
                 <MapTrifold size={19} weight="bold" aria-hidden="true" />
                 Solar Map
@@ -60,10 +61,10 @@ export function PersonaLanding({ persona }: { persona: Persona }) {
             <h2>{persona.closingHeadline}</h2>
             <p>{persona.closingText}</p>
           </div>
-          <Link href={persona.primaryHref} className="campaign-button campaign-button-primary">
+          <FunnelLink href={persona.primaryHref} persona={persona.slug} sourceRoute={`/fuer/${persona.slug}`} className="campaign-button campaign-button-primary">
             {persona.primaryLabel}
             <ArrowRight size={19} weight="bold" aria-hidden="true" />
-          </Link>
+          </FunnelLink>
         </section>
       </main>
       <SiteFooter />

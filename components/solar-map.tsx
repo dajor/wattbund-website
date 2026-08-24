@@ -239,6 +239,7 @@ export function SolarMap({ initialRegions }: { initialRegions: Region[] }) {
           <LayerToggle checked={layers.profiles} onChange={(checked) => setLayers((current) => ({ ...current, profiles: checked }))} label="Community-Profile" swatch="blue" />
         </fieldset>
         <div className="map-note"><Info size={18} /><p>Potenzialwerte sind eine erste Orientierung aus Gebäudedaten. Sie ersetzen keine Fachplanung.</p></div>
+        <Link href="/region-wuenschen" className="button button-secondary map-region-interest">Deine Region fehlt?</Link>
       </aside>
       <section className="map-stage" aria-label={`Solar Map für ${region.name}`}>
         <div ref={mapContainer} className="map-canvas" />
@@ -255,7 +256,7 @@ export function SolarMap({ initialRegions }: { initialRegions: Region[] }) {
               <p>Potenzialwerte dienen als erste Orientierung und ersetzen keine Fachplanung.</p>
             </div>
           </details>
-          <Link href="/konto" className="mobile-profile-action"><UserPlus size={20} />Mitmachen</Link>
+          <Link href="/region-wuenschen" className="mobile-profile-action"><UserPlus size={20} />Region wünschen</Link>
         </nav>
         {(selectedBuilding || selectedProfile) && (
           <DetailPanel building={selectedBuilding} profile={selectedProfile} onClose={() => { setSelectedBuilding(null); setSelectedProfile(null); }} />

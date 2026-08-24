@@ -29,6 +29,9 @@ export const profileRole = pgEnum("profile_role", ["producer", "consumer", "busi
 export const profileStatus = pgEnum("profile_status", ["draft", "pending", "published", "rejected", "hidden"]);
 export const pvStatus = pgEnum("pv_status", ["none", "planned", "active"]);
 export const importStatus = pgEnum("import_status", ["queued", "running", "completed", "failed"]);
+export const regionInterestRole = pgEnum("region_interest_role", ["producer", "consumer", "business", "solar_partner", "municipality", "initiator"]);
+export const regionInterestStatus = pgEnum("region_interest_status", ["pending", "confirmed"]);
+export const regionDemandStage = pgEnum("region_demand_stage", ["watch", "contact", "pilot"]);
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -237,3 +240,46 @@ export const auditEvents = pgTable("audit_events", {
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 });
+
+export const regionInterests = pgTable("region_interests", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  email: text("email").notNull(),
+  postalCode: text("postal_code").notNull(),
+  role: regionInterestRole("role").notNull(),
+  status: regionInterestStatus("status").notNull().default("pending"),
+  municipality: text("municipality"),
+  longitude: numeric("longitude", { precision: 9, scale: 6 }),
+  latitude: numeric("latitude", { precision: 9, scale: 6 }),
+  consentVersion: text("consent_version").notNull(),
+  consentedAt: timestamp("consented_at", { withTimezone: true }).notNull().defaultNow(),
+  verificationTokenHash: text("verification_token_hash"),
+  verificationExpiresAt: timestamp("verification_expires_at", { withTimezone: true }),
+  manageTokenHash: text("manage_token_hash"),
+  lastConfirmationSentAt: timestamp("last_confirmation_sent_at", { withTimezone: true }),
+  sendAttempts: integer("send_attempts").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+  consentExpiresAt: timestamp("consent_expires_at", { withTimezone: true })
+}, (table) => [
+  uniqueIndex("region_interests_email_postal_uidx").on(table.email, table.postalCode),
+  index("region_interests_status_postal_idx").on(table.status, table.postalCode),
+  uniqueIndex("region_interests_verification_token_uidx").on(table.verificationTokenHash),
+  uniqueIndex("region_interests_manage_token_uidx").on(table.manageTokenHash)
+]);
+
+export const regionDemandReviews = pgTable("region_demand_reviews", {
+  postalCode: text("postal_code").primaryKey(),
+  stage: regionDemandStage("stage").notNull().default("watch"),
+  updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+});
+
+export const funnelEvents = pgTable("funnel_events", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  sourceRoute: text("source_route"),
+  persona: text("persona"),
+  anonymousSessionId: uuid("anonymous_session_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [index("funnel_events_name_created_idx").on(table.name, table.createdAt)]);

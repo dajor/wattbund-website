@@ -15,6 +15,7 @@ export function SiteFooter() {
       <div className="footer-links">
         <Link href="/#personas">Für wen</Link>
         <Link href="/solar-map">Solar Map</Link>
+        <Link href="/region-wuenschen">Region wünschen</Link>
         <Link href="/konto">Mitmachen</Link>
         <Link href="/legal">Impressum & Datenschutz</Link>
       </div>

@@ -666,3 +666,100 @@ button, summary { -webkit-tap-highlight-color: transparent; }
   .principle-map { background: linear-gradient(145deg, #163354, #153326) !important; }
   .button-secondary:hover { background: #142b47; }
 }
+
+/* Region interest funnel */
+.region-interest-layout {
+  min-height: calc(100dvh - 70px);
+  padding-block: clamp(40px, 7vw, 96px);
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(420px, 0.75fr);
+  align-items: center;
+  gap: clamp(44px, 8vw, 124px);
+}
+.region-interest-intro { display: grid; justify-items: start; gap: 22px; }
+.region-interest-intro h1 { max-width: 740px; margin: 0; font-size: clamp(3.5rem, 7vw, 7rem); line-height: 0.91; letter-spacing: -0.065em; text-wrap: balance; }
+.region-interest-facts { display: grid; gap: 13px; margin-top: 10px; }
+.region-interest-facts span { display: flex; align-items: center; gap: 10px; color: var(--ink-soft); font-weight: 650; }
+.region-interest-facts svg { color: var(--campaign-yellow-deep); }
+.region-interest-form,
+.region-form-success { padding: clamp(24px, 4vw, 42px); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card); box-shadow: var(--shadow); }
+.region-interest-form { display: grid; gap: 19px; }
+.region-form-heading > svg { color: var(--campaign-yellow-deep); }
+.region-form-heading h2 { margin: 10px 0 3px; font-size: 1.8rem; letter-spacing: -0.035em; }
+.region-form-heading p { margin: 0; color: var(--muted); }
+.region-interest-form input:not([type="checkbox"]),
+.region-interest-form select {
+  width: 100%; min-height: 50px; padding: 0 13px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-control);
+}
+.region-interest-form input::placeholder { color: var(--muted); opacity: 0.9; }
+.region-interest-form input:focus,
+.region-interest-form select:focus { border-color: var(--blue); outline: 3px solid color-mix(in srgb, var(--blue) 22%, transparent); }
+.region-form-row { display: grid; grid-template-columns: minmax(120px, 0.7fr) minmax(180px, 1.3fr); gap: 14px; }
+.region-consent { display: grid; grid-template-columns: 20px 1fr; gap: 11px; align-items: start; color: var(--ink-soft); font-size: 0.82rem; line-height: 1.5; }
+.region-consent input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--blue); }
+.region-consent a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
+.region-interest-form > small { color: var(--muted); font-size: 0.74rem; line-height: 1.5; }
+.region-interest-form button:disabled { cursor: wait; opacity: 0.72; }
+.honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.region-form-success { min-height: 360px; display: flex; flex-direction: column; align-items: start; justify-content: center; }
+.region-form-success > svg { color: var(--green); }
+.region-form-success h2 { margin: 18px 0 5px; font-size: 2rem; letter-spacing: -0.04em; }
+.region-form-success p { max-width: 48ch; margin: 0 0 22px; color: var(--muted); }
+.map-region-interest { width: 100%; margin-top: 18px; }
+
+/* Regional demand administration */
+.admin-tabs { display: flex; gap: 8px; margin-top: 28px; }
+.admin-tabs a { padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--radius-control); font-size: 0.84rem; font-weight: 700; }
+.admin-tabs a[aria-current="page"] { color: #f8fbff; background: var(--blue); border-color: var(--blue); }
+.region-dashboard { display: grid; gap: 16px; }
+.admin-summary { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: stretch; }
+.admin-summary article,
+.admin-panel { padding: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card); }
+.admin-summary article { display: grid; }
+.admin-summary strong { font-family: var(--font-mono); font-size: 2rem; line-height: 1; }
+.admin-summary span { margin-top: 6px; color: var(--muted); font-size: 0.78rem; }
+.admin-summary .button { align-self: center; }
+.admin-panel h2 { margin: 0 0 18px; font-size: 1.25rem; }
+.demand-trend { height: 130px; display: grid; grid-template-columns: repeat(30, 1fr); align-items: end; gap: 4px; }
+.demand-trend span { min-height: 4px; background: var(--green); border-radius: 3px 3px 0 0; }
+.funnel-metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.funnel-metrics div { display: grid; gap: 3px; padding-left: 12px; border-left: 3px solid var(--campaign-yellow, #f5bd2e); }
+.funnel-metrics strong { font-family: var(--font-mono); font-size: 1.35rem; }
+.funnel-metrics span { color: var(--muted); font-size: 0.75rem; }
+.admin-panel-heading { display: flex; align-items: start; justify-content: space-between; gap: 24px; }
+.admin-panel-heading h2 { margin-bottom: 3px; }
+.admin-panel-heading p { margin: 0; color: var(--muted); }
+.region-table-wrap { overflow-x: auto; margin-top: 20px; }
+.region-ranking table { width: 100%; border-collapse: collapse; min-width: 850px; }
+.region-ranking th { padding: 10px 12px; color: var(--muted); border-bottom: 1px solid var(--line); font-size: 0.72rem; text-align: left; }
+.region-ranking td { padding: 15px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.region-ranking tbody tr:last-child td { border-bottom: 0; }
+.region-ranking td:first-child { display: grid; }
+.region-ranking td small { color: var(--muted); }
+.confirmed-count { color: var(--green); font-family: var(--font-mono); font-size: 1.25rem; font-weight: 780; }
+.role-counts { display: flex; flex-wrap: wrap; gap: 5px; }
+.role-counts span { padding: 4px 6px; background: var(--paper); border-radius: 6px; font-family: var(--font-mono); font-size: 0.69rem; }
+.region-ranking select { min-height: 40px; padding: 0 32px 0 10px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-control); }
+
+@media (max-width: 900px) {
+  .region-interest-layout { min-height: auto; grid-template-columns: 1fr; padding-block: 48px 76px; }
+  .region-interest-intro { max-width: 760px; }
+  .region-interest-form { max-width: 680px; }
+  .admin-summary { grid-template-columns: 1fr 1fr; }
+  .admin-summary .button { grid-column: 1 / -1; justify-self: start; }
+  .funnel-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+  .region-interest-layout { width: 100%; padding: 34px 14px 56px; gap: 34px; }
+  .region-interest-intro h1 { font-size: clamp(2.85rem, 13vw, 4rem); }
+  .region-interest-form,
+  .region-form-success { padding: 22px 18px; border-radius: 16px; box-shadow: none; }
+  .region-form-row { grid-template-columns: 1fr; }
+  .region-interest-form .campaign-button { width: 100%; }
+  .admin-summary { grid-template-columns: 1fr; }
+  .admin-summary .button { grid-column: auto; width: 100%; }
+  .funnel-metrics { grid-template-columns: 1fr 1fr; }
+  .admin-panel-heading { display: grid; }
+  .admin-panel-heading .button { width: 100%; }
+}

@@ -53,6 +53,22 @@ pnpm import:mastr -- --file /path/to/municipality-aggregates.csv
 - Vor öffentlichen Profilen: DEV-Datenbank auf Managed PostgreSQL in Frankfurt migrieren und Wiederherstellung testen.
 - Recht: Anbieterangaben und vollständige Datenschutzerklärung vor Veröffentlichung ergänzen und fachlich prüfen lassen.
 
+## Deutschlandweite Nachfrage
+
+`/region-wuenschen` erfasst E-Mail, PLZ und Rolle mit Double-Opt-in. Nur bestätigte Einträge erscheinen unter `/admin/regionen` im Ranking. Der Adminbereich unterstützt manuelle Statuswerte und einen CSV-Export. Funnel-Ereignisse enthalten weder E-Mail noch IP-Adresse.
+
+Die tägliche Aufräumroutine kann als DigitalOcean Job ausgeführt werden:
+
+```bash
+pnpm db:cleanup-interests
+```
+
+Sie löscht unbestätigte Einträge nach 7 Tagen und meldet bestätigte Einträge, deren Einwilligung nach 12 Monaten erneuert werden muss.
+
+## Backup und Wiederherstellung
+
+Vor einer öffentlichen Kampagne muss ein aktuelles PostgreSQL-Backup in eine getrennte Testdatenbank wiederhergestellt werden. Danach sind mindestens `regions`, `profiles` und `region_interests` per Zeilenzahl und Stichprobe zu prüfen. Erst nach erfolgreicher Anmeldung, Regionsbestätigung und Adminabfrage in der Wiederherstellungsumgebung gilt der Test als bestanden. Zugangsdaten oder Produktionsdaten dürfen nicht in das Repository geschrieben werden.
+
 ## Qualität
 
 ```bash

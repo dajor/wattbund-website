@@ -5,6 +5,7 @@ import { ArrowRight, MapTrifold } from "@phosphor-icons/react/dist/ssr";
 import regionImage from "@/assets/personas/region-offen.jpg";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { FunnelLink } from "@/components/funnel-link";
 import { personas } from "@/lib/personas";
 
 export const metadata: Metadata = {
@@ -26,10 +27,10 @@ export default function HomePage() {
               WattBund macht Solarpotenzial sichtbar und bringt die Menschen zusammen, die lokale Energie voranbringen.
             </p>
             <div className="campaign-actions">
-              <Link href="#personas" className="campaign-button campaign-button-primary">
-                Einstieg finden
+              <FunnelLink href="/region-wuenschen" sourceRoute="/" className="campaign-button campaign-button-primary">
+                Region wünschen
                 <ArrowRight size={19} weight="bold" aria-hidden="true" />
-              </Link>
+              </FunnelLink>
               <Link href="/solar-map" className="campaign-button campaign-button-secondary">
                 <MapTrifold size={19} weight="bold" aria-hidden="true" />
                 Solar Map
@@ -85,12 +86,12 @@ export default function HomePage() {
           <div>
             <p className="campaign-kicker">Der gemeinsame Anfang</p>
             <h2>Zeig deiner Region, dass du dabei bist.</h2>
-            <p>Lege dein Profil an. Du entscheidest, welche Angaben öffentlich sichtbar werden.</p>
+            <p>E-Mail, PLZ und Rolle reichen. Erst deine Bestätigung zählt als regionales Signal.</p>
           </div>
-          <Link href="/konto" className="campaign-button campaign-button-primary">
-            Jetzt mitmachen
+          <FunnelLink href="/region-wuenschen" sourceRoute="/" className="campaign-button campaign-button-primary">
+            Region wünschen
             <ArrowRight size={19} weight="bold" aria-hidden="true" />
-          </Link>
+          </FunnelLink>
         </section>
       </main>
       <SiteFooter />
