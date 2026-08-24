@@ -9,8 +9,10 @@ export const metadata: Metadata = {
   description: "Zeige WattBund, wo in Deutschland Interesse an einer lokalen Energie-Community besteht."
 };
 
-export default async function RegionInterestPage({ searchParams }: { searchParams: Promise<{ rolle?: string }> }) {
-  const { rolle } = await searchParams;
+export default async function RegionInterestPage({ searchParams }: { searchParams: Promise<{ rolle?: string; plz?: string; ort?: string }> }) {
+  const { rolle, plz, ort } = await searchParams;
+  const postalCode = plz && /^\d{5}$/.test(plz) ? plz : undefined;
+  const location = ort?.trim().slice(0, 100) || undefined;
   return (
     <div className="campaign-shell">
       <SiteHeader />
@@ -25,7 +27,7 @@ export default async function RegionInterestPage({ searchParams }: { searchParam
             <span><CheckCircle size={21} />Nur bestätigt zählt</span>
           </div>
         </section>
-        <RegionInterestForm initialRole={rolle} />
+        <RegionInterestForm initialRole={rolle} initialPostalCode={postalCode} initialLocation={location} />
       </main>
       <SiteFooter />
     </div>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, MapTrifold } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, ChartBar, EnvelopeSimple, Info, MagnifyingGlass, MapTrifold, UsersThree } from "@phosphor-icons/react/dist/ssr";
 import regionImage from "@/assets/personas/region-offen.jpg";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -45,6 +45,41 @@ export default function HomePage() {
               sizes="(max-width: 860px) 100vw, 48vw"
             />
           </figure>
+        </section>
+
+        <section className="how-wattbund-works campaign-frame" aria-labelledby="how-wattbund-works-title">
+          <div className="how-wattbund-intro">
+            <h2 id="how-wattbund-works-title">So wird aus Interesse eine Region.</h2>
+            <p>WattBund startet dort, wo bestätigte Nachfrage und passende Partner zusammenkommen.</p>
+            <Link href="/solar-map" className="campaign-button campaign-button-secondary">
+              Ort suchen
+              <ArrowRight size={18} weight="bold" aria-hidden="true" />
+            </Link>
+          </div>
+          <div>
+            <ol className="how-wattbund-steps">
+              <li>
+                <MagnifyingGlass size={25} aria-hidden="true" />
+                <div><h3>Ort suchen</h3><p>Finde deinen Ort oder deine Postleitzahl in der Solar Map.</p></div>
+              </li>
+              <li>
+                <EnvelopeSimple size={25} aria-hidden="true" />
+                <div><h3>Interesse bestätigen</h3><p>E-Mail, PLZ und Rolle reichen. Erst der Link in der E-Mail macht dein Signal gültig.</p></div>
+              </li>
+              <li>
+                <ChartBar size={25} aria-hidden="true" />
+                <div><h3>Nachfrage bewerten</h3><p>WattBund bündelt bestätigte Interessen nach Region und prüft mögliche Pilotgebiete manuell.</p></div>
+              </li>
+              <li>
+                <UsersThree size={25} aria-hidden="true" />
+                <div><h3>Pilot vorbereiten</h3><p>Wenn eine Region passt, sprechen wir mit Interessenten, Kommunen und Partnern über den nächsten Schritt.</p></div>
+              </li>
+            </ol>
+            <div className="how-wattbund-status">
+              <Info size={21} aria-hidden="true" />
+              <p><strong>Aktueller Stand:</strong> WattBund baut regionale Pilotprojekte auf. Ein Eintrag ist noch kein Stromvertrag und löst keinen automatischen Stromhandel aus.</p>
+            </div>
+          </div>
         </section>
 
         <section id="personas" className="persona-picker campaign-frame" aria-labelledby="persona-picker-title">

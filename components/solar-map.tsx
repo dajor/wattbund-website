@@ -18,6 +18,7 @@ import {
   X
 } from "@phosphor-icons/react";
 import { findRegionForPoint } from "@/lib/geocoding";
+import { buildRegionInterestHref } from "@/lib/region-interest-url";
 import type { BuildingProperties, PublicProfile, Region } from "@/lib/types";
 
 type LayerState = { roofs: boolean; profiles: boolean };
@@ -49,6 +50,10 @@ export function SolarMap({ initialRegions }: { initialRegions: Region[] }) {
   const region = useMemo(
     () => initialRegions.find((item) => item.slug === selectedRegionSlug) ?? null,
     [initialRegions, selectedRegionSlug]
+  );
+  const regionInterestHref = useMemo(
+    () => buildRegionInterestHref(region ? null : selectedLocation),
+    [region, selectedLocation]
   );
 
   const searchLocations = useCallback(async () => {
@@ -329,7 +334,7 @@ export function SolarMap({ initialRegions }: { initialRegions: Region[] }) {
             <p>Noch keine Pilotkarte</p>
             <h2>{selectedLocation.name}</h2>
             <span>Zeige uns dein Interesse. So erkennen wir, wo WattBund als Nächstes starten sollte.</span>
-            <Link href="/region-wuenschen" className="button button-primary">Region wünschen</Link>
+            <Link href={regionInterestHref} className="button button-primary">Region wünschen</Link>
           </div>
         ) : (
           <p className="map-search-hint">Suche deutschlandweit nach deinem Ort oder deiner Postleitzahl.</p>
@@ -350,7 +355,7 @@ export function SolarMap({ initialRegions }: { initialRegions: Region[] }) {
               <p>Potenzialwerte dienen als erste Orientierung und ersetzen keine Fachplanung.</p>
             </div>
           </details>}
-          <Link href="/region-wuenschen" className="mobile-profile-action"><UserPlus size={20} />Region wünschen</Link>
+          <Link href={regionInterestHref} className="mobile-profile-action"><UserPlus size={20} />Region wünschen</Link>
         </nav>
         {(selectedBuilding || selectedProfile) && (
           <DetailPanel building={selectedBuilding} profile={selectedProfile} onClose={() => { setSelectedBuilding(null); setSelectedProfile(null); }} />
@@ -423,8 +428,8 @@ function profilesToGeoJson(profiles: PublicProfile[]) {
   };
 }
 
-function formatNumber(value: number) { return Number.isFinite(value) ? value.toLocaleString("de-DE") : "–"; }
-function formatEnergy(value: number) { return Number.isFinite(value) ? `${Math.round(value).toLocaleString("de-DE")} kWp` : "–"; }
+function formatNumber(value: number) { return Number.isFinite(value) ? value.toLocaleString("de-DE") : "-"; }
+function formatEnergy(value: number) { return Number.isFinite(value) ? `${Math.round(value).toLocaleString("de-DE")} kWp` : "-"; }
 function roleLabel(role: PublicProfile["role"]) {
   return { producer: "Erzeuger", consumer: "Verbraucher", business: "Unternehmen", partner: "Partner" }[role];
 }

@@ -5,10 +5,11 @@ import Link from "next/link";
 import { CheckCircle, EnvelopeSimple, MapPin, SpinnerGap } from "@phosphor-icons/react";
 import { trackFunnelEvent } from "@/lib/funnel-client";
 import { REGION_INTEREST_ROLES } from "@/lib/region-interest-options";
+import { RegionProgress } from "@/components/region-progress";
 
 type Role = keyof typeof REGION_INTEREST_ROLES;
 
-export function RegionInterestForm({ initialRole }: { initialRole?: string }) {
+export function RegionInterestForm({ initialRole, initialPostalCode, initialLocation }: { initialRole?: string; initialPostalCode?: string; initialLocation?: string }) {
   const role = initialRole && initialRole in REGION_INTEREST_ROLES ? initialRole as Role : "consumer";
   const [state, setState] = useState<"idle" | "submitting" | "sent" | "confirmed">("idle");
   const [message, setMessage] = useState<string | null>(null);
@@ -49,6 +50,7 @@ export function RegionInterestForm({ initialRole }: { initialRole?: string }) {
   if (state === "sent" || state === "confirmed") {
     return (
       <section className="region-form-success" aria-live="polite">
+        <RegionProgress current={state === "sent" ? 2 : 3} />
         <CheckCircle size={42} weight="duotone" />
         <h2>{state === "confirmed" ? "Dein Interesse zählt bereits." : "Prüfe dein Postfach."}</h2>
         <p>{state === "confirmed" ? "Wir haben Rolle und Einwilligung aktualisiert. Eine neue E-Mail enthält deinen Löschlink." : "Klicke innerhalb von 24 Stunden auf den Bestätigungslink. Erst dann zählt dein Regionswunsch."}</p>
@@ -59,11 +61,13 @@ export function RegionInterestForm({ initialRole }: { initialRole?: string }) {
 
   return (
     <form className="region-interest-form" onSubmit={submit} noValidate>
+      <RegionProgress current={1} />
       <div className="region-form-heading">
         <EnvelopeSimple size={28} />
         <h2>Interesse eintragen</h2>
         <p>Keine Anmeldung und keine vollständige Adresse nötig.</p>
       </div>
+      {initialLocation && <p className="region-prefill"><MapPin size={18} aria-hidden="true" />Aus der Solar Map übernommen: <strong>{initialLocation}</strong></p>}
       <div className="form-field">
         <label htmlFor="region-email">E-Mail-Adresse</label>
         <input id="region-email" name="email" type="email" autoComplete="email" placeholder="name@beispiel.de" required />
@@ -71,7 +75,7 @@ export function RegionInterestForm({ initialRole }: { initialRole?: string }) {
       <div className="region-form-row">
         <div className="form-field">
           <label htmlFor="region-postal-code">Postleitzahl</label>
-          <input id="region-postal-code" name="postalCode" type="text" inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" maxLength={5} placeholder="85586" required />
+          <input id="region-postal-code" name="postalCode" type="text" inputMode="numeric" autoComplete="postal-code" pattern="[0-9]{5}" maxLength={5} placeholder="85586" defaultValue={initialPostalCode} required />
         </div>
         <div className="form-field">
           <label htmlFor="region-role">Deine Rolle</label>
