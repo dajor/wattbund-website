@@ -415,7 +415,7 @@ button, summary { -webkit-tap-highlight-color: transparent; }
 .persona-card-media { aspect-ratio: 1 / 0.78; display: block; overflow: hidden; background: var(--paper); }
 .persona-card-erzeuger .persona-card-media,
 .persona-card-verbraucher .persona-card-media { aspect-ratio: 1 / 0.68; }
-.persona-card-media img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center top; transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1); }
+.persona-card-media img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1); }
 .persona-card:hover .persona-card-media img { transform: scale(1.025); }
 .persona-card-copy { min-height: 290px; display: flex; flex: 1; flex-direction: column; align-items: start; padding: clamp(22px, 3vw, 34px); }
 .persona-card-audience { color: var(--campaign-yellow-deep); font-size: 0.76rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
@@ -628,10 +628,10 @@ button, summary { -webkit-tap-highlight-color: transparent; }
   .persona-card-erzeuger,
   .persona-card-verbraucher,
   .persona-card-solarpartner {
-    min-height: 240px;
-    display: grid;
+    min-height: 0;
+    display: flex;
     grid-column: auto;
-    grid-template-columns: minmax(0, 44%) minmax(0, 56%);
+    flex-direction: column;
     border-radius: 16px;
   }
   .persona-card-media,
@@ -639,16 +639,16 @@ button, summary { -webkit-tap-highlight-color: transparent; }
   .persona-card-verbraucher .persona-card-media,
   .persona-card-solarpartner .persona-card-media {
     width: 100%;
-    height: 100%;
-    aspect-ratio: auto;
+    height: auto;
+    aspect-ratio: 16 / 10;
     background: #0d1f35;
   }
-  .persona-card-media img { object-fit: contain; object-position: center; }
-  .persona-card-copy { min-height: 0; padding: 20px 17px; }
-  .persona-card-audience { font-size: 0.64rem; letter-spacing: 0.05em; }
-  .persona-card-copy strong { margin-top: 10px; font-size: 1.2rem; line-height: 1.08; }
-  .persona-card-copy > span:not(.persona-card-audience, .persona-card-link) { margin-top: 8px; font-size: 0.84rem; line-height: 1.42; }
-  .persona-card-link { padding-top: 14px; font-size: 0.82rem; }
+  .persona-card-media img { object-fit: cover; object-position: center; }
+  .persona-card-copy { min-height: 236px; padding: 24px 20px; }
+  .persona-card-audience { font-size: 0.68rem; letter-spacing: 0.06em; }
+  .persona-card-copy strong { margin-top: 11px; font-size: 1.42rem; line-height: 1.08; }
+  .persona-card-copy > span:not(.persona-card-audience, .persona-card-link) { margin-top: 10px; font-size: 0.91rem; line-height: 1.46; }
+  .persona-card-link { padding-top: 20px; font-size: 0.9rem; }
   .campaign-closing,
   .persona-closing { width: calc(100% - 28px); margin-bottom: 14px; padding: 34px 24px; align-items: stretch; flex-direction: column; gap: 28px; border-radius: 16px; }
   .campaign-closing h2,

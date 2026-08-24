@@ -98,9 +98,9 @@ export default function HomePage() {
               >
                 <span className="persona-card-media">
                   <Image
-                    src={persona.image}
+                    src={persona.cardImage}
                     alt=""
-                    sizes="(max-width: 620px) 44vw, (max-width: 1000px) 50vw, 33vw"
+                    sizes="(max-width: 620px) calc(100vw - 28px), (max-width: 1000px) 50vw, 33vw"
                   />
                 </span>
                 <span className="persona-card-copy">

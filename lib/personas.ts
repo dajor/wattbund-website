@@ -1,9 +1,14 @@
 import type { StaticImageData } from "next/image";
 import erzeugerImage from "@/assets/personas/erzeuger.jpg";
+import erzeugerCardImage from "@/assets/personas/erzeuger-card.jpg";
 import gewerbeImage from "@/assets/personas/gewerbe.jpg";
+import gewerbeCardImage from "@/assets/personas/gewerbe-card.jpg";
 import kommunenImage from "@/assets/personas/kommunen.jpg";
+import kommunenCardImage from "@/assets/personas/kommunen-card.jpg";
 import solarpartnerImage from "@/assets/personas/solarpartner.jpg";
+import solarpartnerCardImage from "@/assets/personas/solarpartner-card.jpg";
 import verbraucherImage from "@/assets/personas/verbraucher.jpg";
+import verbraucherCardImage from "@/assets/personas/verbraucher-card.jpg";
 
 export type PersonaSlug =
   | "erzeuger"
@@ -20,6 +25,7 @@ export type Persona = {
   headline: string;
   lead: string;
   image: StaticImageData;
+  cardImage: StaticImageData;
   imageAlt: string;
   primaryLabel: string;
   primaryHref: string;
@@ -39,27 +45,28 @@ export const personas: Persona[] = [
     headline: "Dein Dach kann mehr.",
     lead: "Mach deine Solaranlage zum Ausgangspunkt einer lokalen Energie-Community und bündle echtes Interesse in deiner Region.",
     image: erzeugerImage,
+    cardImage: erzeugerCardImage,
     imageAlt: "Eigentümer vor einem Haus mit Solaranlage in einer vernetzten Nachbarschaft",
     primaryLabel: "Region wünschen",
     primaryHref: "/region-wuenschen?rolle=producer",
     valueHeadline: "Vom einzelnen Dach zur lokalen Initiative",
-    valueLead: "WattBund schafft zunächst Transparenz und Kontakte. So wird sichtbar, wo eine Community entstehen kann.",
+    valueLead: "WattBund bündelt bestätigte regionale Interessen. So wird sichtbar, wo ein Pilot sinnvoll sein kann.",
     steps: [
       {
-        title: "Anlage sichtbar machen",
-        text: "Zeige freiwillig, in welcher Region bereits Solarstrom entsteht, ohne deine genaue Adresse öffentlich zu machen.",
+        title: "Region eintragen",
+        text: "Zeige mit PLZ und Rolle, dass in deiner Region Solarstrom entsteht. Eine genaue Adresse ist nicht nötig.",
       },
       {
         title: "Interesse bündeln",
-        text: "Finde Haushalte, Betriebe und weitere Erzeuger aus derselben Umgebung.",
+        text: "WattBund zählt nur bestätigte Signale von Haushalten, Betrieben und weiteren Erzeugern.",
       },
       {
-        title: "Community vorbereiten",
-        text: "Schaffe eine belastbare Grundlage für Gespräche und einen möglichen lokalen Pilot.",
+        title: "Pilot prüfen",
+        text: "WattBund bewertet starke Regionen manuell und bereitet bei Bedarf erste Gespräche vor.",
       },
     ],
     closingHeadline: "Deine Region wartet nicht auf Perfektion.",
-    closingText: "Ein erstes Profil reicht, damit andere sehen: Hier bewegt sich etwas.",
+    closingText: "Ein bestätigter Regionswunsch reicht, damit lokale Nachfrage sichtbar wird.",
   },
   {
     slug: "verbraucher",
@@ -69,11 +76,12 @@ export const personas: Persona[] = [
     headline: "Kein Dach? Kein Problem.",
     lead: "Auch als Mieter oder Haushalt ohne PV-Anlage kannst du Teil einer lokalen Energie-Community werden.",
     image: verbraucherImage,
+    cardImage: verbraucherCardImage,
     imageAlt: "Paar in einer Wohnsiedlung mit Solaranlagen in der Nachbarschaft",
-    primaryLabel: "Interesse zeigen",
+    primaryLabel: "Region wünschen",
     primaryHref: "/region-wuenschen?rolle=consumer",
     valueHeadline: "Dein Interesse macht Bedarf sichtbar",
-    valueLead: "Die Solar Map zeigt Potenziale. Dein freiwilliges Profil zeigt, wo Menschen lokale Energie wirklich nutzen möchten.",
+    valueLead: "Die Solar Map zeigt Potenziale. Dein bestätigter Regionswunsch zeigt, wo Menschen lokale Energie wirklich nutzen möchten.",
     steps: [
       {
         title: "Region prüfen",
@@ -81,11 +89,11 @@ export const personas: Persona[] = [
       },
       {
         title: "Bedarf zeigen",
-        text: "Lege ein Verbraucherprofil an und signalisiere dein Interesse an lokaler Energie.",
+        text: "Trage E-Mail, PLZ und Rolle ein und bestätige dein Interesse über den sicheren Link.",
       },
       {
-        title: "Kontakte ermöglichen",
-        text: "WattBund bündelt regionale Signale und schützt dabei deine genaue Wohnadresse.",
+        title: "Nachfrage bündeln",
+        text: "WattBund wertet bestätigte Signale regional aus. Deine genaue Wohnadresse wird nicht benötigt.",
       },
     ],
     closingHeadline: "Lokale Energie braucht nicht nur Dächer.",
@@ -99,6 +107,7 @@ export const personas: Persona[] = [
     headline: "Die Sonne arbeitet. Du auch.",
     lead: "Verbinde deinen Betriebsstandort mit regionalem Solarpotenzial und werde Teil einer lokalen Energie-Community.",
     image: gewerbeImage,
+    cardImage: gewerbeCardImage,
     imageAlt: "Bäcker vor seinem Betrieb mit Solaranlagen in der Umgebung",
     primaryLabel: "Region wünschen",
     primaryHref: "/region-wuenschen?rolle=business",
@@ -107,15 +116,15 @@ export const personas: Persona[] = [
     steps: [
       {
         title: "Standort einordnen",
-        text: "Erfasse deinen Betrieb und zeige, ob du Energie erzeugst, nutzen möchtest oder beides.",
+        text: "Trage PLZ und Rolle ein und zeige, dass dein Betrieb regionale Energie mitgestalten möchte.",
       },
       {
         title: "Potenziale verbinden",
-        text: "Entdecke weitere Anlagen, Interessenten und Initiativen in deiner Region.",
+        text: "WattBund bündelt bestätigte Signale von Anlagen, Haushalten und Initiativen in deiner Region.",
       },
       {
         title: "Regional sichtbar werden",
-        text: "Positioniere deinen Betrieb als aktiven Teil der lokalen Energiewende.",
+        text: "Starke Regionen werden manuell bewertet und für mögliche Pilotgespräche vorbereitet.",
       },
     ],
     closingHeadline: "Regionalität endet nicht an der Ladentür.",
@@ -129,23 +138,24 @@ export const personas: Persona[] = [
     headline: "Jede Anlage startet eine Community.",
     lead: "Mach aus einzelnen PV-Kunden ein regionales Netzwerk und erschließe langfristige Beziehungen rund um lokale Energie.",
     image: solarpartnerImage,
+    cardImage: solarpartnerCardImage,
     imageAlt: "Solarinstallateur vor einem Haus mit Photovoltaikanlage",
-    primaryLabel: "Interesse zeigen",
+    primaryLabel: "Region wünschen",
     primaryHref: "/region-wuenschen?rolle=solar_partner",
     valueHeadline: "Nach der Installation beginnt das Netzwerk",
-    valueLead: "WattBund ergänzt dein Kerngeschäft um einen regionalen Community-Einstieg, ohne bestehende Kundenbeziehungen zu ersetzen.",
+    valueLead: "WattBund zeigt anhand bestätigter Regionswünsche, wo Kunden und Partner Interesse an einem lokalen Pilot haben.",
     steps: [
       {
         title: "Projekte erweitern",
-        text: "Lade Anlagenbesitzer ein, ihr regionales Potenzial freiwillig sichtbar zu machen.",
+        text: "Lade Anlagenbesitzer ein, ihren Regionswunsch mit PLZ und Rolle zu bestätigen.",
       },
       {
         title: "Kunden aktivieren",
-        text: "Gib deinen Kunden einen klaren nächsten Schritt nach der technischen Inbetriebnahme.",
+        text: "Gib deinen Kunden einen einfachen nächsten Schritt, ohne Vertrag oder vollständiges Profil.",
       },
       {
         title: "Regionen entwickeln",
-        text: "Erkenne, wo sich Nachfrage und bestehende Anlagen zu einer Initiative verdichten.",
+        text: "Erkenne anhand bestätigter Signale, wo ein gemeinsamer Pilot geprüft werden sollte.",
       },
     ],
     closingHeadline: "Die nächste Anlage ist mehr als ein Auftrag.",
@@ -159,11 +169,12 @@ export const personas: Persona[] = [
     headline: "Energie wird regional.",
     lead: "Schaffe einen sichtbaren Treffpunkt für Erzeuger, Verbraucher, Betriebe und Partner in deiner Kommune oder Region.",
     image: kommunenImage,
+    cardImage: kommunenCardImage,
     imageAlt: "Menschen aus einer Gemeinde vor einem Ort mit Solaranlagen",
-    primaryLabel: "Region aktivieren",
+    primaryLabel: "Region wünschen",
     primaryHref: "/region-wuenschen?rolle=municipality",
     valueHeadline: "Eine gemeinsame Sicht auf das, was möglich ist",
-    valueLead: "WattBund verbindet räumliche Orientierung mit freiwilligen Interessenprofilen und liefert eine verständliche Basis für den Dialog.",
+    valueLead: "WattBund verbindet räumliche Orientierung mit bestätigten Regionswünschen und liefert eine verständliche Basis für den Dialog.",
     steps: [
       {
         title: "Potenziale verstehen",
