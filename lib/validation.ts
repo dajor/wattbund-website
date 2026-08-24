@@ -37,3 +37,5 @@ export const funnelEventSchema = z.object({
   persona: z.string().trim().max(40).regex(/^[a-z0-9_-]+$/).optional(),
   anonymousSessionId: z.string().uuid().optional()
 }).strict();
+
+export const locationSearchSchema = z.string().trim().min(2).max(100);

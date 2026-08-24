@@ -44,3 +44,7 @@ export function pointWithinRegionBounds([longitude, latitude]: Coordinates, regi
   const [[west, south], [east, north]] = region.bounds;
   return longitude >= west && longitude <= east && latitude >= south && latitude <= north;
 }
+
+export function findRegionForPoint(coordinates: Coordinates, regions: Region[]) {
+  return regions.find((region) => pointWithinRegionBounds(coordinates, region)) ?? null;
+}
