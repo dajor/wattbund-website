@@ -16,10 +16,14 @@ describe("region interest validation", () => {
     { ...valid, postalCode: "8558" },
     { ...valid, postalCode: "ABCDE" },
     { ...valid, role: "unknown" },
-    { ...valid, privacyConsent: false },
-    { ...valid, website: "bot.example" }
+    { ...valid, privacyConsent: false }
   ])("rejects invalid or automated submissions", (input) => {
     expect(regionInterestSchema.safeParse(input).success).toBe(false);
+  });
+
+  it("accepts a bounded honeypot value so the API can silently discard bots", () => {
+    expect(regionInterestSchema.safeParse({ ...valid, website: "bot.example" }).success).toBe(true);
+    expect(regionInterestSchema.safeParse({ ...valid, website: "x".repeat(201) }).success).toBe(false);
   });
 
   it("only accepts known manual stages", () => {

@@ -22,7 +22,7 @@ export const regionInterestSchema = z.object({
   postalCode: z.string().trim().regex(/^\d{5}$/),
   role: z.enum(["producer", "consumer", "business", "solar_partner", "municipality", "initiator"]),
   privacyConsent: z.literal(true),
-  website: z.string().max(0).optional().default(""),
+  website: z.string().max(200).optional().default(""),
   sourceRoute: z.string().trim().max(120).optional()
 }).strict();
 
