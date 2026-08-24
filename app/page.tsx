@@ -65,7 +65,7 @@ export default function HomePage() {
                   <Image
                     src={persona.image}
                     alt=""
-                    sizes="(max-width: 680px) 100vw, (max-width: 1000px) 50vw, 33vw"
+                    sizes="(max-width: 620px) 44vw, (max-width: 1000px) 50vw, 33vw"
                   />
                 </span>
                 <span className="persona-card-copy">

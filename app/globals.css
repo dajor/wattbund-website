@@ -579,17 +579,22 @@ button, summary { -webkit-tap-highlight-color: transparent; }
   .persona-card-erzeuger,
   .persona-card-verbraucher,
   .persona-card-solarpartner {
-    min-height: 248px;
+    min-height: 240px;
     display: grid;
     grid-column: auto;
-    grid-template-columns: minmax(112px, 0.8fr) minmax(0, 1.45fr);
+    grid-template-columns: minmax(0, 44%) minmax(0, 56%);
     border-radius: 16px;
   }
   .persona-card-media,
   .persona-card-erzeuger .persona-card-media,
   .persona-card-verbraucher .persona-card-media,
-  .persona-card-solarpartner .persona-card-media { width: 100%; height: 100%; aspect-ratio: auto; }
-  .persona-card-media img { object-position: center; }
+  .persona-card-solarpartner .persona-card-media {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    background: #0d1f35;
+  }
+  .persona-card-media img { object-fit: contain; object-position: center; }
   .persona-card-copy { min-height: 0; padding: 20px 17px; }
   .persona-card-audience { font-size: 0.64rem; letter-spacing: 0.05em; }
   .persona-card-copy strong { margin-top: 10px; font-size: 1.2rem; line-height: 1.08; }
