@@ -134,7 +134,11 @@ export async function processNextSolarAnalysisTile(jobId: string) {
     const parsed = solarScanCallbackSchema.safeParse(await response.json());
     if (!parsed.success) throw new Error("Funktion liefert kein gültiges Scan-Ergebnis");
     await persistSolarScanResult(database, parsed.data);
-    return { processed: true, detections: parsed.data.detections.length };
+    return {
+      processed: parsed.data.success,
+      detections: parsed.data.detections.length,
+      ...(parsed.data.error ? { error: parsed.data.error } : {})
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Funktionsaufruf fehlgeschlagen";
     await markDispatchFailure(database, tile.id, jobId, tile.attempts, message);

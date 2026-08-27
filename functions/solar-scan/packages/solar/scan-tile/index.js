@@ -2,6 +2,9 @@ const WMS_ENDPOINT = "https://geoservices.bayern.de/od/wms/dop/v1/dop20";
 const INFERENCE_ENDPOINT = "https://inference.do-ai.run/v1/chat/completions";
 const MODEL = "qwen3.8-max";
 const IMAGE_SIZE = 512;
+// The Functions runtime executes this action as CommonJS.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const fetch = globalThis.fetch ?? require("node-fetch");
 
 async function main(event) {
   const jobId = String(event?.jobId ?? "");
@@ -74,7 +77,7 @@ async function fetchAerialImage(bounds) {
     TRANSPARENT: "false"
   };
   Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
-  const response = await fetch(url, { signal: AbortSignal.timeout(25_000) });
+  const response = await fetchWithTimeout(url, {}, 25_000);
   if (!response.ok) throw new Error(`Luftbilddienst antwortet mit HTTP ${response.status}`);
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.startsWith("image/")) throw new Error("Luftbilddienst hat kein Bild geliefert");
@@ -84,7 +87,7 @@ async function fetchAerialImage(bounds) {
 }
 
 async function detectSolar(imageUrl, bounds) {
-  const response = await fetch(INFERENCE_ENDPOINT, {
+  const response = await fetchWithTimeout(INFERENCE_ENDPOINT, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${process.env.DIGITALOCEAN_MODEL_ACCESS_KEY}`,
@@ -111,9 +114,8 @@ async function detectSolar(imageUrl, bounds) {
           ]
         }
       ]
-    }),
-    signal: AbortSignal.timeout(180_000)
-  });
+    })
+  }, 180_000);
   if (!response.ok) {
     const detail = await response.text();
     throw new Error(`KI-Modell antwortet mit HTTP ${response.status}: ${detail.slice(0, 240)}`);
@@ -189,15 +191,14 @@ function approximateAreaM2([west, south, east, north]) {
 }
 
 async function sendResult(callbackUrl, body) {
-  const response = await fetch(callbackUrl, {
+  const response = await fetchWithTimeout(callbackUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-Solar-Scan-Secret": process.env.SOLAR_SCAN_SECRET
     },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(20_000)
-  });
+    body: JSON.stringify(body)
+  }, 20_000);
   if (!response.ok) throw new Error(`Rückgabe an WattBund fehlgeschlagen (HTTP ${response.status})`);
 }
 
@@ -207,6 +208,16 @@ function clamp(value, minimum, maximum) {
 
 function round(value) {
   return Math.round(value * 100) / 100;
+}
+
+async function fetchWithTimeout(url, options, timeoutMs) {
+  const controller = typeof AbortController === "function" ? new AbortController() : null;
+  const timeout = setTimeout(() => controller?.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, ...(controller ? { signal: controller.signal } : {}) });
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 exports.main = main;
