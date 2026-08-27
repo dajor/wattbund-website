@@ -848,7 +848,24 @@ button, summary { -webkit-tap-highlight-color: transparent; }
 .scan-calculation-note svg { color: var(--campaign-yellow-deep, #d49d10); }
 .scan-calculation-note p { margin: 0; font-size: 0.78rem; line-height: 1.5; }
 .scan-selection > .button { width: 100%; }
-.scan-map { min-height: 610px; background: #dfe8ee; }
+.scan-map-shell { position: relative; min-width: 0; min-height: 610px; overflow: hidden; }
+.scan-map { width: 100%; height: 100%; min-height: 610px; background: #dfe8ee; }
+.scan-map-review { position: absolute; z-index: 3; left: 18px; bottom: 18px; width: min(380px, calc(100% - 36px)); padding: 16px; color: var(--ink); background: color-mix(in srgb, var(--surface) 94%, transparent); border: 1px solid var(--line); border-radius: var(--radius-control); box-shadow: var(--shadow); backdrop-filter: blur(12px); }
+.scan-map-review-heading { display: flex; align-items: start; justify-content: space-between; gap: 14px; }
+.scan-map-review-heading > div { display: grid; gap: 2px; }
+.scan-map-review-heading span { color: var(--blue); font-size: 0.66rem; font-weight: 780; letter-spacing: 0.07em; text-transform: uppercase; }
+.scan-map-review-heading strong { font-size: 1.02rem; }
+.scan-map-review-heading button { width: 34px; height: 34px; display: grid; flex: 0 0 auto; place-items: center; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.scan-map-review-heading button:hover { background: var(--paper); }
+.scan-map-review > p { margin: 9px 0 0; color: var(--muted); font-size: 0.75rem; line-height: 1.45; }
+.scan-map-review-values { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 13px; }
+.scan-map-review-values span { display: grid; gap: 2px; color: var(--muted); font-size: 0.62rem; }
+.scan-map-review-values strong { color: var(--ink); font-family: var(--font-mono); font-size: 0.78rem; }
+.scan-map-review-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.scan-map-review-actions .button { width: 100%; min-height: 42px; padding-inline: 10px; }
+.scan-map-review-status { width: max-content; display: block; margin-top: 14px; padding: 7px 9px; border-radius: 8px; font-size: 0.72rem; font-weight: 760; }
+.scan-map-review-status.confirmed { color: #17683f; background: var(--green-soft); }
+.scan-map-review-status.rejected { color: #8f2e35; background: #fbeaec; }
 .scan-results-grid { display: grid; grid-template-columns: 310px minmax(0, 1fr); gap: 18px; align-items: start; }
 .scan-job-list, .scan-detail { padding: 22px; }
 .scan-job-list { display: grid; gap: 8px; }
@@ -881,6 +898,7 @@ button, summary { -webkit-tap-highlight-color: transparent; }
 .scan-retry { margin-top: 14px; }
 .candidate-list { display: grid; gap: 10px; margin-top: 24px; }
 .candidate-card { padding: 18px; border: 1px solid var(--line); border-radius: var(--radius-control); }
+.candidate-card.active { border-color: var(--blue); box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 14%, transparent); }
 .candidate-card.confirmed { border-color: color-mix(in srgb, var(--green) 55%, var(--line)); }
 .candidate-card.rejected { opacity: 0.58; }
 .candidate-heading { display: flex; justify-content: space-between; gap: 16px; }
@@ -892,6 +910,7 @@ button, summary { -webkit-tap-highlight-color: transparent; }
 .candidate-values strong { color: var(--ink); font-family: var(--font-mono); font-size: 0.88rem; }
 .candidate-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 17px; }
 .candidate-actions .button { min-height: 42px; padding: 9px 13px; }
+.candidate-map-button[aria-pressed="true"] { color: var(--blue); border-color: var(--blue); background: color-mix(in srgb, var(--blue) 8%, var(--surface)); }
 .scan-empty-result { min-height: 270px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--muted); text-align: center; }
 .scan-empty-result svg { color: var(--green); }
 .scan-empty-result strong { color: var(--ink); }
@@ -908,7 +927,7 @@ button, summary { -webkit-tap-highlight-color: transparent; }
   .funnel-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .scan-workspace { grid-template-columns: 1fr; }
   .scan-controls { border-right: 0; border-bottom: 1px solid var(--line); }
-  .scan-map { min-height: 480px; }
+  .scan-map-shell, .scan-map { min-height: 480px; }
   .scan-results-grid { grid-template-columns: 1fr; }
   .scan-job-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .scan-job-list .admin-panel-heading, .scan-job-list .scan-empty-copy { grid-column: 1 / -1; }
@@ -942,7 +961,9 @@ button, summary { -webkit-tap-highlight-color: transparent; }
   .admin-tabs a { flex: 0 0 auto; }
   .scan-workspace { min-height: 0; border-radius: 16px; }
   .scan-controls { padding: 20px 16px; }
-  .scan-map { min-height: 390px; }
+  .scan-map-shell, .scan-map { min-height: 440px; }
+  .scan-map-review { right: 10px; bottom: 10px; left: 10px; width: auto; padding: 13px; }
+  .scan-map-review-values { gap: 5px; }
   .scan-results-grid { gap: 12px; }
   .scan-job-list { grid-template-columns: 1fr; padding: 16px; }
   .scan-job-list .admin-panel-heading, .scan-job-list .scan-empty-copy { grid-column: auto; }
@@ -953,4 +974,5 @@ button, summary { -webkit-tap-highlight-color: transparent; }
   .candidate-values span { padding: 8px 0; border-bottom: 1px solid var(--line); }
   .candidate-actions { display: grid; grid-template-columns: 1fr 1fr; }
   .candidate-actions .button { width: 100%; }
+  .candidate-actions .candidate-map-button { grid-column: 1 / -1; }
 }

@@ -6,6 +6,7 @@ import type { GeoJSONSource, Map as MapLibreMap, StyleSpecification } from "mapl
 import {
   ArrowClockwise,
   Check,
+  Crosshair,
   MagnifyingGlass,
   MapPin,
   SolarPanel,
@@ -65,6 +66,7 @@ const statusLabels: Record<ScanJob["status"], string> = {
 export function AdminSolarScanner() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<SearchResult | null>(null);
@@ -75,6 +77,7 @@ export function AdminSolarScanner() {
   const [searching, setSearching] = useState(false);
   const [starting, setStarting] = useState(false);
   const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
   const [configured, setConfigured] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,6 +85,19 @@ export function AdminSolarScanner() {
   const activeJob = detail?.job ?? jobs.find(({ id }) => id === selectedJobId) ?? null;
   const activeJobStatus = activeJob?.status;
   const progress = activeJob ? Math.round(((activeJob.completed_tiles + activeJob.failed_tiles) / Math.max(1, activeJob.total_tiles)) * 100) : 0;
+  const selectedCandidate = detail?.candidates.find(({ id }) => id === selectedCandidateId) ?? null;
+  const mapBounds = detail?.job.bounds ?? selectedLocation?.bbox;
+  const mapBoundsSignature = mapBounds?.join(",") ?? "";
+  const mapViewKey = detail?.job.id ?? selectedLocation?.id ?? "";
+
+  const focusCandidate = useCallback((candidate: Candidate) => {
+    const map = mapRef.current;
+    if (!map) return;
+    setSelectedCandidateId(candidate.id);
+    focusGeometry(map, candidate.geometry);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    mapContainer.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+  }, []);
 
   const loadJobs = useCallback(async () => {
     const response = await fetch("/api/admin/solar-analysis/jobs", { cache: "no-store" });
@@ -176,22 +192,52 @@ export function AdminSolarScanner() {
           "fill-outline-color": "#ffffff"
         }
       });
+      map.addLayer({
+        id: "scan-candidates-focus-halo",
+        type: "line",
+        source: "scan-candidates",
+        filter: ["==", ["get", "selected"], true],
+        paint: { "line-color": "#ffffff", "line-width": 7, "line-opacity": 0.95 }
+      });
+      map.addLayer({
+        id: "scan-candidates-focus-line",
+        type: "line",
+        source: "scan-candidates",
+        filter: ["==", ["get", "selected"], true],
+        paint: { "line-color": "#2568d8", "line-width": 4 }
+      });
+      map.on("click", "scan-candidates-fill", (event) => {
+        const feature = event.features?.[0];
+        const candidateId = feature?.properties?.candidateId;
+        if (!candidateId || feature?.geometry.type !== "Polygon") return;
+        setSelectedCandidateId(String(candidateId));
+        focusGeometry(map, feature.geometry as Candidate["geometry"]);
+      });
+      map.on("mouseenter", "scan-candidates-fill", () => { map.getCanvas().style.cursor = "pointer"; });
+      map.on("mouseleave", "scan-candidates-fill", () => { map.getCanvas().style.cursor = ""; });
+      setMapReady(true);
     });
-    return () => { map.remove(); mapRef.current = null; };
+    return () => { setMapReady(false); map.remove(); mapRef.current = null; };
   }, []);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map?.isStyleLoaded()) return;
-    const bounds = detail?.job.bounds ?? selectedLocation?.bbox;
+    if (!mapReady || !map?.isStyleLoaded() || !mapBoundsSignature) return;
+    const bounds = mapBoundsSignature.split(",").map(Number) as Bounds;
     const areaSource = map.getSource("scan-area") as GeoJSONSource | undefined;
-    if (bounds && areaSource) {
+    if (areaSource) {
       areaSource.setData(boundsFeature(bounds));
       map.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: 44, maxZoom: 15, duration: 700 });
     }
+    setSelectedCandidateId(null);
+  }, [mapBoundsSignature, mapReady, mapViewKey]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!mapReady || !map?.isStyleLoaded()) return;
     const candidateSource = map.getSource("scan-candidates") as GeoJSONSource | undefined;
-    if (candidateSource) candidateSource.setData(candidatesFeatureCollection(detail?.candidates ?? []));
-  }, [detail, selectedLocation]);
+    if (candidateSource) candidateSource.setData(candidatesFeatureCollection(detail?.candidates ?? [], selectedCandidateId));
+  }, [detail?.candidates, mapReady, selectedCandidateId]);
 
   async function searchLocations(event: React.FormEvent) {
     event.preventDefault();
@@ -252,6 +298,9 @@ export function AdminSolarScanner() {
 
   async function reviewCandidate(candidateId: string, decision: "confirm" | "reject") {
     if (!selectedJobId) return;
+    const nextCandidate = selectedCandidateId === candidateId
+      ? detail?.candidates.find((candidate) => candidate.id !== candidateId && candidate.review_status === "pending") ?? null
+      : null;
     setReviewingId(candidateId);
     setError(null);
     try {
@@ -263,6 +312,8 @@ export function AdminSolarScanner() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Prüfung fehlgeschlagen");
       await Promise.all([loadDetail(selectedJobId), loadJobs()]);
+      if (nextCandidate) focusCandidate(nextCandidate);
+      else if (selectedCandidateId === candidateId) setSelectedCandidateId(null);
     } catch (reviewError) {
       setError(reviewError instanceof Error ? reviewError.message : "Prüfung fehlgeschlagen");
     } finally {
@@ -305,7 +356,25 @@ export function AdminSolarScanner() {
             <button className="button button-primary" type="button" disabled={starting || !configured} onClick={startScan}>{starting ? <><SpinnerGap className="spin" />Scan wird angelegt</> : <><SolarPanel />Solar-Scan starten</>}</button>
           </div>}
         </div>
-        <div ref={mapContainer} className="scan-map" aria-label="Ausgewähltes Scan-Gebiet und Solar-Funde" />
+        <div className="scan-map-shell">
+          <div ref={mapContainer} className="scan-map" aria-label="Ausgewähltes Scan-Gebiet und Solar-Funde" />
+          {selectedCandidate && <aside className="scan-map-review" aria-live="polite">
+            <div className="scan-map-review-heading">
+              <div><span>Luftbildprüfung</span><strong>{kindLabel(selectedCandidate.kind)}</strong></div>
+              <button type="button" aria-label="Kartenprüfung schließen" onClick={() => setSelectedCandidateId(null)}><X /></button>
+            </div>
+            <p>Der blau-weiße Rahmen zeigt den von der KI erkannten Bereich.</p>
+            <div className="scan-map-review-values">
+              <span><strong>{Math.round(Number(selectedCandidate.confidence) * 100)}%</strong>Sicherheit</span>
+              <span><strong>{Number(selectedCandidate.estimated_area_m2).toLocaleString("de-DE", { maximumFractionDigits: 1 })} m²</strong>Modulfläche</span>
+              <span><strong>{Number(selectedCandidate.estimated_kwp).toLocaleString("de-DE", { maximumFractionDigits: 1 })} kWp</strong>Leistung</span>
+            </div>
+            {selectedCandidate.review_status === "pending" ? <div className="scan-map-review-actions">
+              <button type="button" className="button button-primary" disabled={reviewingId === selectedCandidate.id} onClick={() => void reviewCandidate(selectedCandidate.id, "confirm")}><Check />Bestätigen</button>
+              <button type="button" className="button button-secondary" disabled={reviewingId === selectedCandidate.id} onClick={() => void reviewCandidate(selectedCandidate.id, "reject")}><X />Kein Solar</button>
+            </div> : <span className={`scan-map-review-status ${selectedCandidate.review_status}`}>{reviewLabel(selectedCandidate.review_status)}</span>}
+          </aside>}
+        </div>
       </section>
 
       <section className="scan-results-grid">
@@ -337,10 +406,13 @@ export function AdminSolarScanner() {
 
             <div className="candidate-list">
               {detail?.candidates.length ? detail.candidates.map((candidate) => (
-                <article key={candidate.id} className={`candidate-card ${candidate.review_status}`}>
+                <article key={candidate.id} className={`candidate-card ${candidate.review_status}${selectedCandidateId === candidate.id ? " active" : ""}`}>
                   <div className="candidate-heading"><div><span>{kindLabel(candidate.kind)}</span><strong>{Math.round(Number(candidate.confidence) * 100)}% Sicherheit</strong></div><i>{reviewLabel(candidate.review_status)}</i></div>
                   <div className="candidate-values"><span><strong>{Number(candidate.estimated_area_m2).toLocaleString("de-DE", { maximumFractionDigits: 1 })} m²</strong>Modulfläche</span><span><strong>{Number(candidate.estimated_kwp).toLocaleString("de-DE", { maximumFractionDigits: 1 })} kWp</strong>Leistung</span><span><strong>{Number(candidate.annual_yield_kwh).toLocaleString("de-DE", { maximumFractionDigits: 0 })} kWh</strong>pro Jahr</span></div>
-                  {candidate.review_status === "pending" && <div className="candidate-actions"><button type="button" className="button button-primary" disabled={reviewingId === candidate.id} onClick={() => void reviewCandidate(candidate.id, "confirm")}><Check />Bestätigen</button><button type="button" className="button button-secondary" disabled={reviewingId === candidate.id} onClick={() => void reviewCandidate(candidate.id, "reject")}><X />Kein Solar</button></div>}
+                  <div className="candidate-actions">
+                    <button type="button" className="button button-secondary candidate-map-button" aria-pressed={selectedCandidateId === candidate.id} onClick={() => focusCandidate(candidate)}><Crosshair />Auf Karte prüfen</button>
+                    {candidate.review_status === "pending" && <><button type="button" className="button button-primary" disabled={reviewingId === candidate.id} onClick={() => void reviewCandidate(candidate.id, "confirm")}><Check />Bestätigen</button><button type="button" className="button button-secondary" disabled={reviewingId === candidate.id} onClick={() => void reviewCandidate(candidate.id, "reject")}><X />Kein Solar</button></>}
+                  </div>
                 </article>
               )) : <div className="scan-empty-result">{["queued", "running"].includes(activeJob.status) ? <><SpinnerGap className="spin" /><strong>Analyse läuft</strong><span>Erste Solar-Funde erscheinen automatisch.</span></> : <><Check /><strong>Keine offenen Funde</strong><span>Für diesen Scan sind aktuell keine Anlagen zu prüfen.</span></>}</div>}
             </div>
@@ -361,8 +433,19 @@ function boundsFeature([west, south, east, north]: Bounds) {
   return { type: "Feature" as const, properties: {}, geometry: { type: "Polygon" as const, coordinates: [[[west, south], [east, south], [east, north], [west, north], [west, south]]] } };
 }
 
-function candidatesFeatureCollection(candidates: Candidate[]) {
-  return { type: "FeatureCollection" as const, features: candidates.map((candidate) => ({ type: "Feature" as const, id: candidate.id, geometry: candidate.geometry, properties: { reviewStatus: candidate.review_status } })) };
+function candidatesFeatureCollection(candidates: Candidate[], selectedCandidateId: string | null) {
+  return { type: "FeatureCollection" as const, features: candidates.map((candidate) => ({ type: "Feature" as const, id: candidate.id, geometry: candidate.geometry, properties: { candidateId: candidate.id, reviewStatus: candidate.review_status, selected: candidate.id === selectedCandidateId } })) };
+}
+
+function focusGeometry(map: MapLibreMap, geometry: Candidate["geometry"]) {
+  const points = geometry.coordinates.flat();
+  if (!points.length) return;
+  const longitudes = points.map(([longitude]) => longitude);
+  const latitudes = points.map(([, latitude]) => latitude);
+  map.fitBounds(
+    [[Math.min(...longitudes), Math.min(...latitudes)], [Math.max(...longitudes), Math.max(...latitudes)]],
+    { padding: 96, maxZoom: 20, duration: 650 }
+  );
 }
 
 function kindLabel(kind: Candidate["kind"]) {
