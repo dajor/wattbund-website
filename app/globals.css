@@ -250,13 +250,6 @@ button, summary { -webkit-tap-highlight-color: transparent; }
 .form-actions { display: flex; flex-wrap: wrap; gap: 9px; }
 .form-feedback { margin: 0; padding: 11px 13px; border-radius: 9px; font-size: 0.84rem; font-weight: 630; }
 .form-feedback.error, .admin-empty.error { color: #8f2e35; background: #fbeaec; }
-.auth-divider { display: flex; align-items: center; gap: 12px; margin: 24px 0 18px; color: var(--muted); font-size: 0.72rem; font-weight: 750; letter-spacing: 0.12em; text-transform: uppercase; }
-.auth-divider::before, .auth-divider::after { content: ""; height: 1px; flex: 1; background: var(--line); }
-.admin-sign-in-heading { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; }
-.admin-sign-in-heading svg { flex: none; color: var(--blue); }
-.admin-sign-in-heading h3, .admin-sign-in-heading p { margin: 0; }
-.admin-sign-in-heading h3 { font-size: 1rem; }
-.admin-sign-in-heading p { margin-top: 3px; color: var(--muted); font-size: 0.84rem; }
 .form-feedback.success { color: #17683f; background: var(--green-soft); }
 .privacy-note { display: grid; grid-template-columns: 22px 1fr; gap: 10px; margin-top: 30px; padding-top: 20px; color: var(--muted); border-top: 1px solid var(--line); }
 .privacy-note p { margin: 0; font-size: 0.8rem; }
