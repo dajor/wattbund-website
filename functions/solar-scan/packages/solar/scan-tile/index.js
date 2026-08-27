@@ -21,24 +21,26 @@ async function main(event) {
         return [];
       }
     });
-    await sendResult(callbackUrl, {
+    const result = {
       jobId,
       tileId,
       success: true,
       retrievedAt: new Date().toISOString(),
       detections
-    });
-    return { statusCode: 200, body: { accepted: true, detections: detections.length } };
+    };
+    if (callbackUrl) await sendResult(callbackUrl, result);
+    return { statusCode: 200, body: result };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unbekannter Fehler";
+    const result = { jobId, tileId, success: false, error: message, detections: [] };
     if (callbackUrl && jobId && tileId) {
       try {
-        await sendResult(callbackUrl, { jobId, tileId, success: false, error: message, detections: [] });
+        await sendResult(callbackUrl, result);
       } catch (callbackError) {
         return { statusCode: 502, body: { error: message, callbackError: callbackError instanceof Error ? callbackError.message : "Callback fehlgeschlagen" } };
       }
     }
-    return { statusCode: 200, body: { accepted: false, error: message } };
+    return { statusCode: 200, body: result };
   }
 }
 
@@ -48,8 +50,10 @@ function validateInput({ jobId, tileId, bounds, callbackUrl }) {
   const [west, south, east, north] = bounds.map(Number);
   if (west >= east || south >= north) throw new Error("Leere Kachelgrenzen");
   if (west < 8.8 || east > 13.9 || south < 47.1 || north > 50.7) throw new Error("Der DOP20-Scanner unterstützt derzeit Regionen in Bayern");
-  const callback = new URL(callbackUrl);
-  if (callback.protocol !== "https:" || !["wattbund.de", "www.wattbund.de"].includes(callback.hostname)) throw new Error("Ungültige Rückgabeadresse");
+  if (callbackUrl) {
+    const callback = new URL(callbackUrl);
+    if (callback.protocol !== "https:" || !["wattbund.de", "www.wattbund.de"].includes(callback.hostname)) throw new Error("Ungültige Rückgabeadresse");
+  }
   if (!process.env.DIGITALOCEAN_MODEL_ACCESS_KEY || !process.env.SOLAR_SCAN_SECRET) throw new Error("KI-Zugang ist nicht konfiguriert");
 }
 

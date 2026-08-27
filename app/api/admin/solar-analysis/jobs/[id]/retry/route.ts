@@ -1,7 +1,6 @@
-import { after, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { pool } from "@/lib/db";
-import { dispatchSolarAnalysisTiles } from "@/lib/solar-analysis";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -21,6 +20,5 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
      VALUES ($1, 'solar.scan_retried', 'solar_analysis_job', $2, jsonb_build_object('tiles', $3::int))`,
     [session.user.id, id, updated.rowCount]
   );
-  after(() => dispatchSolarAnalysisTiles(id));
   return NextResponse.json({ retried: updated.rowCount });
 }

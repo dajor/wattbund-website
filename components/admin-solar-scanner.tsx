@@ -80,6 +80,7 @@ export function AdminSolarScanner() {
 
   const estimatedTiles = useMemo(() => selectedLocation?.bbox ? estimateTiles(selectedLocation.bbox, selectedLocation.coordinates) : 0, [selectedLocation]);
   const activeJob = detail?.job ?? jobs.find(({ id }) => id === selectedJobId) ?? null;
+  const activeJobStatus = activeJob?.status;
   const progress = activeJob ? Math.round(((activeJob.completed_tiles + activeJob.failed_tiles) / Math.max(1, activeJob.total_tiles)) * 100) : 0;
 
   const loadJobs = useCallback(async () => {
@@ -99,6 +100,13 @@ export function AdminSolarScanner() {
     setJobs((current) => current.map((job) => job.id === jobId ? data.job : job));
   }, []);
 
+  const processNext = useCallback(async (jobId: string) => {
+    const response = await fetch(`/api/admin/solar-analysis/jobs/${jobId}/process`, { method: "POST" });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error ?? "Kachel konnte nicht verarbeitet werden");
+    return data;
+  }, []);
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
       void loadJobs().catch((loadError) => setError(loadError.message));
@@ -115,12 +123,24 @@ export function AdminSolarScanner() {
   }, [loadDetail, selectedJobId]);
 
   useEffect(() => {
-    if (!selectedJobId || !activeJob || !["queued", "running"].includes(activeJob.status)) return;
-    const timer = window.setInterval(() => {
-      void Promise.all([loadJobs(), loadDetail(selectedJobId)]).catch((loadError) => setError(loadError.message));
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, [activeJob, loadDetail, loadJobs, selectedJobId]);
+    if (!selectedJobId || !activeJobStatus || !["queued", "running"].includes(activeJobStatus)) return;
+    let cancelled = false;
+    let timer: number | undefined;
+    const pump = async () => {
+      try {
+        await Promise.all([processNext(selectedJobId), processNext(selectedJobId)]);
+        await Promise.all([loadJobs(), loadDetail(selectedJobId)]);
+      } catch (processError) {
+        if (!cancelled) setError(processError instanceof Error ? processError.message : "Scan-Verarbeitung fehlgeschlagen");
+      }
+      if (!cancelled) timer = window.setTimeout(() => void pump(), 900);
+    };
+    timer = window.setTimeout(() => void pump(), 0);
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [activeJobStatus, loadDetail, loadJobs, processNext, selectedJobId]);
 
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
@@ -306,6 +326,7 @@ export function AdminSolarScanner() {
               <i className={`scan-status ${activeJob.status}`}>{statusLabels[activeJob.status]}</i>
             </div>
             <div className="scan-progress"><span style={{ width: `${progress}%` }} /></div>
+            {["queued", "running"].includes(activeJob.status) && <p className="scan-running-note"><SpinnerGap className="spin" />Die Analyse läuft, solange diese Seite geöffnet ist. Du kannst sie später jederzeit fortsetzen.</p>}
             <div className="scan-metrics">
               <div><strong>{progress}%</strong><span>analysiert</span></div>
               <div><strong>{activeJob.candidate_count}</strong><span>Solar-Funde</span></div>

@@ -1,6 +1,6 @@
-import { after, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
-import { dispatchSolarAnalysisTiles, refreshSolarAnalysisJob, safeSecretMatches } from "@/lib/solar-analysis";
+import { refreshSolarAnalysisJob, safeSecretMatches } from "@/lib/solar-analysis";
 import { solarScanCallbackSchema } from "@/lib/validation";
 
 export async function POST(request: Request) {
@@ -63,7 +63,6 @@ export async function POST(request: Request) {
     }
     await refreshSolarAnalysisJob(client, result.jobId);
     await client.query("COMMIT");
-    after(() => dispatchSolarAnalysisTiles(result.jobId, 1));
     return NextResponse.json({ accepted: true });
   } catch (error) {
     await client.query("ROLLBACK");

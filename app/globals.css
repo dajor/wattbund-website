@@ -872,6 +872,8 @@ button, summary { -webkit-tap-highlight-color: transparent; }
 .scan-detail-heading p { margin: 0; overflow: hidden; color: var(--muted); font-size: 0.8rem; text-overflow: ellipsis; white-space: nowrap; }
 .scan-progress { height: 7px; overflow: hidden; margin-top: 24px; background: var(--paper); border-radius: 99px; }
 .scan-progress span { height: 100%; display: block; background: var(--green); border-radius: inherit; transition: width 400ms ease; }
+.scan-running-note { display: flex; align-items: center; gap: 7px; margin: 10px 0 0; color: var(--muted); font-size: 0.74rem; }
+.scan-running-note svg { flex: 0 0 auto; color: var(--blue); }
 .scan-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; }
 .scan-metrics div { display: grid; gap: 4px; padding: 12px; background: var(--paper); border-radius: var(--radius-control); }
 .scan-metrics strong { font-family: var(--font-mono); font-size: 1.2rem; }
