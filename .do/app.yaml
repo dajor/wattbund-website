@@ -1,6 +1,14 @@
 name: wattbund-app
 region: fra
 
+envs:
+  - key: DIGITALOCEAN_MODEL_ACCESS_KEY
+    scope: RUN_TIME
+    type: SECRET
+  - key: SOLAR_SCAN_SECRET
+    scope: RUN_TIME
+    type: SECRET
+
 domains:
   - domain: wattbund.de
     type: PRIMARY
@@ -61,6 +69,19 @@ services:
       - key: LOCATION_ENCRYPTION_KEY
         scope: RUN_TIME
         type: SECRET
+      - key: SOLAR_SCAN_FUNCTION_URL
+        scope: RUN_TIME
+        value: https://wattbund.de/functions/solar/scan-tile
+
+functions:
+  - name: solar-scan
+    github:
+      repo: dajor/wattbund-website
+      branch: main
+      deploy_on_push: true
+    source_dir: /functions/solar-scan
+    routes:
+      - path: /functions
 
 jobs:
   - name: database-migrate

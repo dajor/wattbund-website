@@ -1,0 +1,16 @@
+environment:
+  DIGITALOCEAN_MODEL_ACCESS_KEY: "${DIGITALOCEAN_MODEL_ACCESS_KEY}"
+  SOLAR_SCAN_SECRET: "${SOLAR_SCAN_SECRET}"
+
+packages:
+  - name: solar
+    functions:
+      - name: scan-tile
+        main: main
+        runtime: nodejs:default
+        web: true
+        webSecure: "${SOLAR_SCAN_SECRET}"
+        limits:
+          timeout: 240000
+          memory: 512
+          logs: 16

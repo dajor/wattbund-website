@@ -39,3 +39,45 @@ export const funnelEventSchema = z.object({
 }).strict();
 
 export const locationSearchSchema = z.string().trim().min(2).max(100);
+
+const longitudeSchema = z.number().finite().min(-180).max(180);
+const latitudeSchema = z.number().finite().min(-90).max(90);
+
+export const solarScanJobSchema = z.object({
+  externalPlaceId: z.string().trim().max(200).optional(),
+  regionName: z.string().trim().min(2).max(120),
+  locationLabel: z.string().trim().min(2).max(240),
+  center: z.tuple([longitudeSchema, latitudeSchema]),
+  bbox: z.tuple([longitudeSchema, latitudeSchema, longitudeSchema, latitudeSchema]),
+  scanMode: z.enum(["sample", "full"])
+}).strict().refine(({ bbox }) => bbox[0] < bbox[2] && bbox[1] < bbox[3], {
+  message: "Ungültiger Kartenausschnitt",
+  path: ["bbox"]
+});
+
+export const solarCandidateReviewSchema = z.object({
+  decision: z.enum(["confirm", "reject"])
+}).strict();
+
+const polygonSchema = z.object({
+  type: z.literal("Polygon"),
+  coordinates: z.array(z.array(z.tuple([longitudeSchema, latitudeSchema])).min(4)).min(1)
+}).strict();
+
+export const solarScanCallbackSchema = z.object({
+  jobId: z.string().uuid(),
+  tileId: z.string().uuid(),
+  success: z.boolean(),
+  retrievedAt: z.string().datetime().optional(),
+  detections: z.array(z.object({
+    detectionIndex: z.number().int().min(0).max(500),
+    kind: z.enum(["pv", "solar_thermal", "uncertain"]),
+    confidence: z.number().finite().min(0).max(1),
+    geometry: polygonSchema,
+    estimatedAreaM2: z.number().finite().min(0).max(100000),
+    estimatedKwp: z.number().finite().min(0).max(50000),
+    annualYieldKwh: z.number().finite().min(0).max(100000000),
+    raw: z.unknown().optional()
+  }).strict()).max(500).optional().default([]),
+  error: z.string().trim().max(2000).optional()
+}).strict();

@@ -32,6 +32,10 @@ export const importStatus = pgEnum("import_status", ["queued", "running", "compl
 export const regionInterestRole = pgEnum("region_interest_role", ["producer", "consumer", "business", "solar_partner", "municipality", "initiator"]);
 export const regionInterestStatus = pgEnum("region_interest_status", ["pending", "confirmed"]);
 export const regionDemandStage = pgEnum("region_demand_stage", ["watch", "contact", "pilot"]);
+export const solarAnalysisJobStatus = pgEnum("solar_analysis_job_status", ["queued", "running", "review", "completed", "failed", "cancelled"]);
+export const solarAnalysisTileStatus = pgEnum("solar_analysis_tile_status", ["queued", "running", "completed", "failed"]);
+export const solarDetectionType = pgEnum("solar_detection_type", ["pv", "solar_thermal", "uncertain"]);
+export const solarCandidateReviewStatus = pgEnum("solar_candidate_review_status", ["pending", "confirmed", "rejected"]);
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -283,3 +287,90 @@ export const funnelEvents = pgTable("funnel_events", {
   anonymousSessionId: uuid("anonymous_session_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [index("funnel_events_name_created_idx").on(table.name, table.createdAt)]);
+
+export const solarAnalysisJobs = pgTable("solar_analysis_jobs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  externalPlaceId: text("external_place_id"),
+  regionName: text("region_name").notNull(),
+  locationLabel: text("location_label").notNull(),
+  center: geometry("center", { type: "Point", srid: 4326 }).notNull(),
+  bounds: jsonb("bounds").notNull(),
+  scanMode: text("scan_mode").notNull().default("full"),
+  sourceKey: text("source_key").notNull().default("bayern-dop20"),
+  model: text("model").notNull().default("qwen3.8-max"),
+  status: solarAnalysisJobStatus("status").notNull().default("queued"),
+  totalTiles: integer("total_tiles").notNull().default(0),
+  completedTiles: integer("completed_tiles").notNull().default(0),
+  failedTiles: integer("failed_tiles").notNull().default(0),
+  candidateCount: integer("candidate_count").notNull().default(0),
+  confirmedCount: integer("confirmed_count").notNull().default(0),
+  createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+  error: text("error"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  startedAt: timestamp("started_at", { withTimezone: true }),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [
+  index("solar_analysis_jobs_status_created_idx").on(table.status, table.createdAt),
+  index("solar_analysis_jobs_center_gix").using("gist", table.center)
+]);
+
+export const solarAnalysisTiles = pgTable("solar_analysis_tiles", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  jobId: uuid("job_id").notNull().references(() => solarAnalysisJobs.id, { onDelete: "cascade" }),
+  tileKey: text("tile_key").notNull(),
+  bounds: jsonb("bounds").notNull(),
+  status: solarAnalysisTileStatus("status").notNull().default("queued"),
+  attempts: integer("attempts").notNull().default(0),
+  lastError: text("last_error"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  startedAt: timestamp("started_at", { withTimezone: true }),
+  completedAt: timestamp("completed_at", { withTimezone: true })
+}, (table) => [
+  uniqueIndex("solar_analysis_tiles_job_key_uidx").on(table.jobId, table.tileKey),
+  index("solar_analysis_tiles_job_status_idx").on(table.jobId, table.status)
+]);
+
+export const solarCandidates = pgTable("solar_candidates", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  jobId: uuid("job_id").notNull().references(() => solarAnalysisJobs.id, { onDelete: "cascade" }),
+  tileId: uuid("tile_id").notNull().references(() => solarAnalysisTiles.id, { onDelete: "cascade" }),
+  detectionIndex: integer("detection_index").notNull(),
+  kind: solarDetectionType("kind").notNull(),
+  confidence: numeric("confidence", { precision: 5, scale: 4 }).notNull(),
+  geometry: geometry("geometry", { type: "Polygon", srid: 4326 }).notNull(),
+  estimatedAreaM2: numeric("estimated_area_m2", { precision: 12, scale: 2 }).notNull(),
+  estimatedKwp: numeric("estimated_kwp", { precision: 12, scale: 2 }).notNull(),
+  annualYieldKwh: numeric("annual_yield_kwh", { precision: 14, scale: 2 }).notNull(),
+  rawResult: jsonb("raw_result"),
+  reviewStatus: solarCandidateReviewStatus("review_status").notNull().default("pending"),
+  reviewedBy: uuid("reviewed_by").references(() => users.id, { onDelete: "set null" }),
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [
+  uniqueIndex("solar_candidates_tile_detection_uidx").on(table.tileId, table.detectionIndex),
+  index("solar_candidates_job_review_idx").on(table.jobId, table.reviewStatus),
+  index("solar_candidates_geometry_gix").using("gist", table.geometry)
+]);
+
+export const solarInstallations = pgTable("solar_installations", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  candidateId: uuid("candidate_id").notNull().unique().references(() => solarCandidates.id, { onDelete: "cascade" }),
+  jobId: uuid("job_id").notNull().references(() => solarAnalysisJobs.id, { onDelete: "cascade" }),
+  regionName: text("region_name").notNull(),
+  kind: solarDetectionType("kind").notNull(),
+  geometry: geometry("geometry", { type: "Polygon", srid: 4326 }).notNull(),
+  estimatedAreaM2: numeric("estimated_area_m2", { precision: 12, scale: 2 }).notNull(),
+  capacityKwp: numeric("capacity_kwp", { precision: 12, scale: 2 }).notNull(),
+  annualYieldKwh: numeric("annual_yield_kwh", { precision: 14, scale: 2 }).notNull(),
+  sourceName: text("source_name").notNull().default("Bayern DOP20"),
+  sourceAsOf: text("source_as_of").notNull(),
+  model: text("model").notNull(),
+  reviewedBy: uuid("reviewed_by").references(() => users.id, { onDelete: "set null" }),
+  published: boolean("published").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [
+  index("solar_installations_geometry_gix").using("gist", table.geometry),
+  index("solar_installations_published_idx").on(table.published)
+]);

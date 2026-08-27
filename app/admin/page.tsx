@@ -62,7 +62,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     <>
       <SiteHeader />
       <main className="admin-layout">
-        <header><p>Administration</p><h1>Community-Profile prüfen</h1><span>Nur freiwillige Angaben werden veröffentlicht. Adressen bleiben verschlüsselt.</span><nav className="admin-tabs"><Link href="/admin" aria-current="page">Profile</Link><Link href="/admin/regionen">Regionen</Link></nav></header>
+        <header><p>Administration</p><h1>Community-Profile prüfen</h1><span>Nur freiwillige Angaben werden veröffentlicht. Adressen bleiben verschlüsselt.</span><nav className="admin-tabs"><Link href="/admin" aria-current="page">Profile</Link><Link href="/admin/regionen">Nachfrage</Link><Link href="/admin/solar-scan">Solar-Scan</Link></nav></header>
         <AdminProfiles />
       </main>
     </>

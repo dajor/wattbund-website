@@ -21,7 +21,7 @@ import { findRegionForPoint } from "@/lib/geocoding";
 import { buildRegionInterestHref } from "@/lib/region-interest-url";
 import type { BuildingProperties, PublicProfile, Region } from "@/lib/types";
 
-type LayerState = { roofs: boolean; profiles: boolean };
+type LayerState = { roofs: boolean; profiles: boolean; installations: boolean };
 type SearchResult = {
   id: string;
   label: string;
@@ -44,7 +44,7 @@ export function SolarMap({ initialRegions }: { initialRegions: Region[] }) {
   const [selectedLocation, setSelectedLocation] = useState<SearchResult | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<BuildingProperties | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<PublicProfile | null>(null);
-  const [layers, setLayers] = useState<LayerState>({ roofs: true, profiles: true });
+  const [layers, setLayers] = useState<LayerState>({ roofs: true, profiles: true, installations: true });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const region = useMemo(
@@ -134,6 +134,20 @@ export function SolarMap({ initialRegions }: { initialRegions: Region[] }) {
     }
   }, []);
 
+  const loadSolarInstallations = useCallback(async (map: MapLibreMap) => {
+    try {
+      const bounds = map.getBounds();
+      const bbox = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()].join(",");
+      const response = await fetch(`/api/map/solar-installations?bbox=${bbox}`);
+      if (!response.ok) return;
+      const data = await response.json();
+      if (mapRef.current !== map || !map.getStyle()) return;
+      (map.getSource("solar-installations") as GeoJSONSource | undefined)?.setData(data);
+    } catch (installationError) {
+      console.error("Published solar installations could not be loaded", installationError);
+    }
+  }, []);
+
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
     const key = process.env.NEXT_PUBLIC_MAPTILER_API_KEY;
@@ -186,6 +200,19 @@ export function SolarMap({ initialRegions }: { initialRegions: Region[] }) {
           source: "solar-buildings",
           paint: { "line-color": "#17395f", "line-width": 1.1, "line-opacity": 0.52 }
         });
+        map.addSource("solar-installations", { type: "geojson", data: emptyFeatureCollection });
+        map.addLayer({
+          id: "solar-installations-fill",
+          type: "fill",
+          source: "solar-installations",
+          paint: { "fill-color": "#f5bd2e", "fill-opacity": 0.88, "fill-outline-color": "#ffffff" }
+        });
+        map.addLayer({
+          id: "solar-installations-line",
+          type: "line",
+          source: "solar-installations",
+          paint: { "line-color": "#6c4d00", "line-width": 1.3 }
+        });
         map.addSource("community-profiles", {
           type: "geojson",
           data: emptyFeatureCollection,
@@ -226,7 +253,24 @@ export function SolarMap({ initialRegions }: { initialRegions: Region[] }) {
         });
         map.on("mouseenter", "solar-buildings-fill", () => { map.getCanvas().style.cursor = "pointer"; });
         map.on("mouseleave", "solar-buildings-fill", () => { map.getCanvas().style.cursor = ""; });
+        map.on("mouseenter", "solar-installations-fill", () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", "solar-installations-fill", () => { map.getCanvas().style.cursor = ""; });
         map.on("click", async (event) => {
+          const installationFeature = map.queryRenderedFeatures(event.point, { layers: ["solar-installations-fill"] })[0];
+          if (installationFeature?.properties) {
+            const properties = installationFeature.properties;
+            const content = document.createElement("div");
+            content.className = "installation-popup";
+            const title = document.createElement("strong");
+            title.textContent = properties.kind === "solar_thermal" ? "Bestätigte Solarthermie" : "Bestätigte Photovoltaik";
+            const value = document.createElement("span");
+            value.textContent = `ca. ${Number(properties.capacityKwp).toLocaleString("de-DE", { maximumFractionDigits: 1 })} kWp · ${Number(properties.annualYieldKwh).toLocaleString("de-DE", { maximumFractionDigits: 0 })} kWh/Jahr`;
+            const source = document.createElement("small");
+            source.textContent = `${properties.regionName} · ${properties.sourceName}`;
+            content.append(title, value, source);
+            new maplibregl.Popup({ closeButton: true, maxWidth: "290px" }).setLngLat(event.lngLat).setDOMContent(content).addTo(map);
+            return;
+          }
           const profileFeature = map.queryRenderedFeatures(event.point, { layers: ["profile-points"] })[0];
           if (profileFeature?.properties) {
             setSelectedBuilding(null);
@@ -253,9 +297,11 @@ export function SolarMap({ initialRegions }: { initialRegions: Region[] }) {
           }
         });
         setLoading(false);
+        void loadSolarInstallations(map);
         map.on("moveend", () => {
           const slug = selectedRegionSlugRef.current;
           if (slug) void loadMapData(map, slug);
+          void loadSolarInstallations(map);
         });
       } catch (loadError) {
         if (mapRef.current !== map) return;
@@ -267,13 +313,14 @@ export function SolarMap({ initialRegions }: { initialRegions: Region[] }) {
       map.remove();
       mapRef.current = null;
     };
-  }, [loadMapData]);
+  }, [loadMapData, loadSolarInstallations]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map?.isStyleLoaded()) return;
     ["solar-buildings-fill", "solar-buildings-line"].forEach((id) => map.setLayoutProperty(id, "visibility", layers.roofs ? "visible" : "none"));
     ["profile-clusters", "profile-cluster-count", "profile-points"].forEach((id) => map.setLayoutProperty(id, "visibility", layers.profiles ? "visible" : "none"));
+    ["solar-installations-fill", "solar-installations-line"].forEach((id) => map.setLayoutProperty(id, "visibility", layers.installations ? "visible" : "none"));
   }, [layers]);
 
   return (
@@ -324,6 +371,7 @@ export function SolarMap({ initialRegions }: { initialRegions: Region[] }) {
             <fieldset className="layer-list">
               <legend>Kartenebenen</legend>
               <LayerToggle checked={layers.roofs} onChange={(checked) => setLayers((current) => ({ ...current, roofs: checked }))} label="Solarpotenzial" swatch="green" />
+              <LayerToggle checked={layers.installations} onChange={(checked) => setLayers((current) => ({ ...current, installations: checked }))} label="Bestehende Solaranlagen" swatch="yellow" />
               <LayerToggle checked={layers.profiles} onChange={(checked) => setLayers((current) => ({ ...current, profiles: checked }))} label="Community-Profile" swatch="blue" />
             </fieldset>
             <div className="map-note"><Info size={18} /><p>Potenzialwerte sind eine erste Orientierung aus Gebäudedaten. Sie ersetzen keine Fachplanung.</p></div>
@@ -334,6 +382,7 @@ export function SolarMap({ initialRegions }: { initialRegions: Region[] }) {
             <p>Noch keine Pilotkarte</p>
             <h2>{selectedLocation.name}</h2>
             <span>Zeige uns dein Interesse. So erkennen wir, wo WattBund als Nächstes starten sollte.</span>
+            <label className="standalone-installation-layer"><input type="checkbox" checked={layers.installations} onChange={(event) => setLayers((current) => ({ ...current, installations: event.target.checked }))} /><i />Bestätigte Solaranlagen anzeigen</label>
             <Link href={regionInterestHref} className="button button-primary">Region wünschen</Link>
           </div>
         ) : (
@@ -344,13 +393,14 @@ export function SolarMap({ initialRegions }: { initialRegions: Region[] }) {
         <div ref={mapContainer} className="map-canvas" />
         {loading && <div className="map-status"><SpinnerGap size={18} className="spin" />Kartendaten werden geladen</div>}
         {error && <div className="map-status map-error">{error}</div>}
-        {region && <div className="map-legend"><span><i className="legend-high" />Hoch</span><span><i className="legend-medium" />Mittel</span><span><i className="legend-low" />Niedrig</span></div>}
+        {(region || layers.installations) && <div className="map-legend">{region && <><span><i className="legend-high" />Hoch</span><span><i className="legend-medium" />Mittel</span><span><i className="legend-low" />Niedrig</span></>}<span><i className="legend-installed" />Bestehende Anlage</span></div>}
         <nav className={`mobile-map-actions${region ? "" : " single"}`} aria-label="Kartenaktionen">
           {region && <details className="mobile-layer-menu">
             <summary><SlidersHorizontal size={20} />Ebenen</summary>
             <div className="mobile-layer-panel">
               <strong>Kartenebenen</strong>
               <LayerToggle checked={layers.roofs} onChange={(checked) => setLayers((current) => ({ ...current, roofs: checked }))} label="Solarpotenzial" swatch="green" />
+              <LayerToggle checked={layers.installations} onChange={(checked) => setLayers((current) => ({ ...current, installations: checked }))} label="Bestehende Solaranlagen" swatch="yellow" />
               <LayerToggle checked={layers.profiles} onChange={(checked) => setLayers((current) => ({ ...current, profiles: checked }))} label="Community-Profile" swatch="blue" />
               <p>Potenzialwerte dienen als erste Orientierung und ersetzen keine Fachplanung.</p>
             </div>
@@ -369,7 +419,7 @@ function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; 
   return <div className="metric"><span>{icon}</span><div><strong>{value}</strong><small>{label}</small></div></div>;
 }
 
-function LayerToggle({ checked, onChange, label, swatch }: { checked: boolean; onChange: (checked: boolean) => void; label: string; swatch: "green" | "blue" }) {
+function LayerToggle({ checked, onChange, label, swatch }: { checked: boolean; onChange: (checked: boolean) => void; label: string; swatch: "green" | "blue" | "yellow" }) {
   return (
     <label className="layer-toggle">
       <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
