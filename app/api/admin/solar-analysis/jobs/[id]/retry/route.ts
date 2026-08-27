@@ -11,7 +11,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "Ungültiger Scan" }, { status: 400 });
   const updated = await pool.query(
     `UPDATE solar_analysis_tiles SET status = 'queued', attempts = 0, last_error = NULL, completed_at = NULL
-     WHERE job_id = $1 AND status = 'failed' RETURNING id`,
+     WHERE job_id = $1 AND (status = 'failed' OR (status = 'running' AND started_at < now() - interval '5 minutes')) RETURNING id`,
     [id]
   );
   if (!updated.rowCount) return NextResponse.json({ error: "Keine fehlgeschlagenen Kacheln vorhanden" }, { status: 409 });

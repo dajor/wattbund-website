@@ -1,7 +1,7 @@
 const WMS_ENDPOINT = "https://geoservices.bayern.de/od/wms/dop/v1/dop20";
 const INFERENCE_ENDPOINT = "https://inference.do-ai.run/v1/chat/completions";
 const MODEL = "qwen3.8-max";
-const IMAGE_SIZE = 1024;
+const IMAGE_SIZE = 512;
 
 async function main(event) {
   const jobId = String(event?.jobId ?? "");
@@ -89,6 +89,7 @@ async function detectSolar(imageUrl, bounds) {
     body: JSON.stringify({
       model: MODEL,
       temperature: 0,
+      max_tokens: 700,
       response_format: { type: "json_object" },
       messages: [
         {
@@ -100,7 +101,7 @@ async function detectSolar(imageUrl, bounds) {
           content: [
             {
               type: "text",
-              text: `Analysiere diese 1024x1024-DOP20-Kachel (${bounds.join(",")}). Gib {"detections":[...]} zurück. Jeder Fund: {"type":"pv"|"solar_thermal"|"uncertain","confidence":0..1,"bbox":[xMin,yMin,xMax,yMax] auf einer Skala 0..1000 mit Ursprung links oben,"panel_area_m2":geschätzte sichtbare Modulfläche}. Nimm nur Anlagen mit confidence >= 0.55 auf. PV sind rechteckige blau/schwarze Modulfelder; Solarthermie nur bei klarer Erkennbarkeit, sonst uncertain.`
+              text: `Analysiere diese 512x512-DOP20-Kachel (${bounds.join(",")}). Gib {"detections":[...]} zurück. Jeder Fund: {"type":"pv"|"solar_thermal"|"uncertain","confidence":0..1,"bbox":[xMin,yMin,xMax,yMax] auf einer Skala 0..1000 mit Ursprung links oben,"panel_area_m2":geschätzte sichtbare Modulfläche}. Nimm nur Anlagen mit confidence >= 0.55 auf. PV sind rechteckige blau/schwarze Modulfelder; Solarthermie nur bei klarer Erkennbarkeit, sonst uncertain.`
             },
             { type: "image_url", image_url: { url: imageUrl } }
           ]

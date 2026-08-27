@@ -1,7 +1,7 @@
 import { after, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { pool } from "@/lib/db";
-import { createSolarScanTiles, dispatchSolarAnalysisTiles, MAX_SOLAR_SCAN_TILES } from "@/lib/solar-analysis";
+import { createSolarScanTiles, dispatchSolarAnalysisTiles, MAX_SOLAR_SCAN_TILES, recoverStaleSolarAnalysisTiles } from "@/lib/solar-analysis";
 import { solarScanJobSchema } from "@/lib/validation";
 
 async function requireAdmin() {
@@ -12,6 +12,8 @@ async function requireAdmin() {
 export async function GET() {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Nicht berechtigt" }, { status: 403 });
   if (!pool) return NextResponse.json({ jobs: [], configured: false });
+  const recoveredJobIds = await recoverStaleSolarAnalysisTiles(pool);
+  recoveredJobIds.forEach((jobId) => after(() => dispatchSolarAnalysisTiles(jobId)));
   const jobs = await pool.query(
     `SELECT id, external_place_id, region_name, location_label, bounds, scan_mode, source_key, model,
       status, total_tiles, completed_tiles, failed_tiles, candidate_count, confirmed_count,

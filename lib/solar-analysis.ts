@@ -11,7 +11,7 @@ export interface SolarScanTile {
 
 const TILE_EDGE_METERS = 320;
 export const MAX_SOLAR_SCAN_TILES = 600;
-const DISPATCH_CONCURRENCY = 4;
+const DISPATCH_CONCURRENCY = 2;
 
 export function createSolarScanTiles(bounds: SolarScanBounds, mode: SolarScanMode, center: [number, number]): SolarScanTile[] {
   const latitude = center[1];
@@ -67,6 +67,20 @@ export async function dispatchSolarAnalysisTiles(jobId: string, concurrency = DI
   const database = pool;
   if (!database) return;
   await Promise.all(Array.from({ length: concurrency }, () => claimAndDispatchTile(database, jobId)));
+}
+
+export async function recoverStaleSolarAnalysisTiles(database: Pool) {
+  const recovered = await database.query<{ job_id: string }>(
+    `UPDATE solar_analysis_tiles
+     SET status = CASE WHEN attempts >= 3 THEN 'failed'::solar_analysis_tile_status ELSE 'queued'::solar_analysis_tile_status END,
+       last_error = 'Unterbrochener Function-Aufruf wurde automatisch wieder aufgenommen',
+       completed_at = CASE WHEN attempts >= 3 THEN now() ELSE NULL END
+     WHERE status = 'running' AND started_at < now() - interval '5 minutes'
+     RETURNING job_id`
+  );
+  const jobIds = [...new Set(recovered.rows.map((row) => row.job_id))];
+  await Promise.all(jobIds.map((jobId) => refreshSolarAnalysisJob(database, jobId)));
+  return jobIds;
 }
 
 async function claimAndDispatchTile(database: Pool, jobId: string) {
