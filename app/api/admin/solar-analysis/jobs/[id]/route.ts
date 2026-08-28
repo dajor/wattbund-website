@@ -19,11 +19,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       [id]
     ),
     pool.query(
-      `SELECT id, tile_id, detection_index, kind, confidence, estimated_area_m2, estimated_kwp,
-        annual_yield_kwh, review_status, reviewed_at, created_at,
-        ST_AsGeoJSON(geometry)::json AS geometry
-       FROM solar_candidates WHERE job_id = $1
-       ORDER BY review_status = 'pending' DESC, confidence DESC, created_at ASC`,
+      `SELECT c.id, c.tile_id, c.detection_index, c.kind, c.confidence, c.estimated_area_m2, c.estimated_kwp,
+        c.annual_yield_kwh, c.review_status, c.reviewed_at, c.created_at, t.bounds AS tile_bounds,
+        ST_AsGeoJSON(c.geometry)::json AS geometry
+       FROM solar_candidates c
+       JOIN solar_analysis_tiles t ON t.id = c.tile_id
+       WHERE c.job_id = $1
+       ORDER BY c.review_status = 'pending' DESC, c.confidence DESC, c.created_at ASC`,
       [id]
     ),
     pool.query(

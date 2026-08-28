@@ -7,6 +7,8 @@ import {
   ArrowClockwise,
   Check,
   Crosshair,
+  Eye,
+  EyeSlash,
   MagnifyingGlass,
   MapPin,
   SolarPanel,
@@ -50,6 +52,7 @@ type Candidate = {
   annual_yield_kwh: string;
   review_status: "pending" | "confirmed" | "rejected";
   geometry: { type: "Polygon"; coordinates: number[][][] };
+  tile_bounds: Bounds;
 };
 type JobDetail = { job: ScanJob; candidates: Candidate[]; failures: Array<{ id: string; tile_key: string; attempts: number; last_error: string }> };
 
@@ -78,6 +81,7 @@ export function AdminSolarScanner() {
   const [starting, setStarting] = useState(false);
   const [reviewingId, setReviewingId] = useState<string | null>(null);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
+  const [showMapMarkings, setShowMapMarkings] = useState(true);
   const [configured, setConfigured] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,11 +93,13 @@ export function AdminSolarScanner() {
   const mapBounds = detail?.job.bounds ?? selectedLocation?.bbox;
   const mapBoundsSignature = mapBounds?.join(",") ?? "";
   const mapViewKey = detail?.job.id ?? selectedLocation?.id ?? "";
+  const selectedTileBoundsSignature = selectedCandidate?.tile_bounds?.join(",") ?? "";
 
   const focusCandidate = useCallback((candidate: Candidate) => {
     const map = mapRef.current;
     if (!map) return;
     setSelectedCandidateId(candidate.id);
+    setShowMapMarkings(true);
     focusGeometry(map, candidate.geometry);
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     mapContainer.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
@@ -188,7 +194,12 @@ export function AdminSolarScanner() {
         source: "scan-candidates",
         paint: {
           "fill-color": ["match", ["get", "reviewStatus"], "confirmed", "#168653", "rejected", "#8f2e35", "#f5bd2e"],
-          "fill-opacity": ["match", ["get", "reviewStatus"], "rejected", 0.25, 0.78],
+          "fill-opacity": [
+            "case",
+            ["==", ["get", "markingVisible"], false], 0,
+            ["==", ["get", "selected"], true], 0.035,
+            ["match", ["get", "reviewStatus"], "rejected", 0.12, 0.28]
+          ],
           "fill-outline-color": "#ffffff"
         }
       });
@@ -196,14 +207,14 @@ export function AdminSolarScanner() {
         id: "scan-candidates-focus-halo",
         type: "line",
         source: "scan-candidates",
-        filter: ["==", ["get", "selected"], true],
+        filter: ["all", ["==", ["get", "selected"], true], ["==", ["get", "markingVisible"], true]],
         paint: { "line-color": "#ffffff", "line-width": 7, "line-opacity": 0.95 }
       });
       map.addLayer({
         id: "scan-candidates-focus-line",
         type: "line",
         source: "scan-candidates",
-        filter: ["==", ["get", "selected"], true],
+        filter: ["all", ["==", ["get", "selected"], true], ["==", ["get", "markingVisible"], true]],
         paint: { "line-color": "#2568d8", "line-width": 4 }
       });
       map.on("click", "scan-candidates-fill", (event) => {
@@ -211,6 +222,7 @@ export function AdminSolarScanner() {
         const candidateId = feature?.properties?.candidateId;
         if (!candidateId || feature?.geometry.type !== "Polygon") return;
         setSelectedCandidateId(String(candidateId));
+        setShowMapMarkings(true);
         focusGeometry(map, feature.geometry as Candidate["geometry"]);
       });
       map.on("mouseenter", "scan-candidates-fill", () => { map.getCanvas().style.cursor = "pointer"; });
@@ -236,8 +248,31 @@ export function AdminSolarScanner() {
     const map = mapRef.current;
     if (!mapReady || !map?.isStyleLoaded()) return;
     const candidateSource = map.getSource("scan-candidates") as GeoJSONSource | undefined;
-    if (candidateSource) candidateSource.setData(candidatesFeatureCollection(detail?.candidates ?? [], selectedCandidateId));
-  }, [detail?.candidates, mapReady, selectedCandidateId]);
+    if (candidateSource) candidateSource.setData(candidatesFeatureCollection(detail?.candidates ?? [], selectedCandidateId, showMapMarkings));
+  }, [detail?.candidates, mapReady, selectedCandidateId, showMapMarkings]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!mapReady || !map?.isStyleLoaded()) return;
+    const layerId = "scan-review-imagery-layer";
+    const sourceId = "scan-review-imagery";
+    if (map.getLayer(layerId)) map.removeLayer(layerId);
+    if (map.getSource(sourceId)) map.removeSource(sourceId);
+    if (!selectedCandidateId || !selectedTileBoundsSignature) return;
+
+    const [west, south, east, north] = selectedTileBoundsSignature.split(",").map(Number) as Bounds;
+    map.addSource(sourceId, {
+      type: "image",
+      url: `/api/admin/solar-analysis/candidates/${selectedCandidateId}/imagery`,
+      coordinates: [[west, north], [east, north], [east, south], [west, south]]
+    });
+    map.addLayer({
+      id: layerId,
+      type: "raster",
+      source: sourceId,
+      paint: { "raster-opacity": 1, "raster-fade-duration": 0, "raster-resampling": "linear" }
+    }, "scan-area-fill");
+  }, [mapReady, selectedCandidateId, selectedTileBoundsSignature]);
 
   async function searchLocations(event: React.FormEvent) {
     event.preventDefault();
@@ -363,7 +398,10 @@ export function AdminSolarScanner() {
               <div><span>Luftbildprüfung</span><strong>{kindLabel(selectedCandidate.kind)}</strong></div>
               <button type="button" aria-label="Kartenprüfung schließen" onClick={() => setSelectedCandidateId(null)}><X /></button>
             </div>
-            <p>Der blau-weiße Rahmen zeigt den von der KI erkannten Bereich.</p>
+            <p>Hochauflösendes DOP20-Luftbild. Der Rahmen markiert den KI-Fund, ohne das Dach zu verdecken.</p>
+            <button type="button" className="scan-marking-toggle" aria-pressed={!showMapMarkings} onClick={() => setShowMapMarkings((visible) => !visible)}>
+              {showMapMarkings ? <EyeSlash /> : <Eye />}{showMapMarkings ? "Markierung ausblenden" : "Markierung anzeigen"}
+            </button>
             <div className="scan-map-review-values">
               <span><strong>{Math.round(Number(selectedCandidate.confidence) * 100)}%</strong>Sicherheit</span>
               <span><strong>{Number(selectedCandidate.estimated_area_m2).toLocaleString("de-DE", { maximumFractionDigits: 1 })} m²</strong>Modulfläche</span>
@@ -433,8 +471,8 @@ function boundsFeature([west, south, east, north]: Bounds) {
   return { type: "Feature" as const, properties: {}, geometry: { type: "Polygon" as const, coordinates: [[[west, south], [east, south], [east, north], [west, north], [west, south]]] } };
 }
 
-function candidatesFeatureCollection(candidates: Candidate[], selectedCandidateId: string | null) {
-  return { type: "FeatureCollection" as const, features: candidates.map((candidate) => ({ type: "Feature" as const, id: candidate.id, geometry: candidate.geometry, properties: { candidateId: candidate.id, reviewStatus: candidate.review_status, selected: candidate.id === selectedCandidateId } })) };
+function candidatesFeatureCollection(candidates: Candidate[], selectedCandidateId: string | null, showMapMarkings: boolean) {
+  return { type: "FeatureCollection" as const, features: candidates.map((candidate) => ({ type: "Feature" as const, id: candidate.id, geometry: candidate.geometry, properties: { candidateId: candidate.id, reviewStatus: candidate.review_status, selected: candidate.id === selectedCandidateId, markingVisible: showMapMarkings } })) };
 }
 
 function focusGeometry(map: MapLibreMap, geometry: Candidate["geometry"]) {

@@ -13,6 +13,34 @@ export interface SolarScanTile {
 const TILE_EDGE_METERS = 320;
 export const MAX_SOLAR_SCAN_TILES = 600;
 const DISPATCH_CONCURRENCY = 2;
+const BAYERN_DOP20_ENDPOINT = "https://geoservices.bayern.de/od/wms/dop/v1/dop20";
+
+export function buildBayernDop20ImageUrl(bounds: SolarScanBounds, imageSize = 1024) {
+  const [west, south, east, north] = bounds.map(Number);
+  if ([west, south, east, north].some((value) => !Number.isFinite(value)) || west >= east || south >= north) {
+    throw new Error("Ungültige Luftbildgrenzen");
+  }
+  if (west < 8.8 || east > 13.9 || south < 47.1 || north > 50.7) {
+    throw new Error("Das DOP20-Luftbild liegt außerhalb Bayerns");
+  }
+  const size = Math.max(512, Math.min(2048, Math.round(imageSize)));
+  const url = new URL(BAYERN_DOP20_ENDPOINT);
+  const query = {
+    SERVICE: "WMS",
+    VERSION: "1.1.1",
+    REQUEST: "GetMap",
+    LAYERS: "by_dop20c",
+    STYLES: "",
+    SRS: "EPSG:4326",
+    BBOX: [west, south, east, north].join(","),
+    WIDTH: String(size),
+    HEIGHT: String(size),
+    FORMAT: "image/jpeg",
+    TRANSPARENT: "false"
+  };
+  Object.entries(query).forEach(([key, value]) => url.searchParams.set(key, value));
+  return url;
+}
 
 export function createSolarScanTiles(bounds: SolarScanBounds, mode: SolarScanMode, center: [number, number]): SolarScanTile[] {
   const latitude = center[1];

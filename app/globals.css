@@ -858,6 +858,8 @@ button, summary { -webkit-tap-highlight-color: transparent; }
 .scan-map-review-heading button { width: 34px; height: 34px; display: grid; flex: 0 0 auto; place-items: center; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
 .scan-map-review-heading button:hover { background: var(--paper); }
 .scan-map-review > p { margin: 9px 0 0; color: var(--muted); font-size: 0.75rem; line-height: 1.45; }
+.scan-marking-toggle { display: inline-flex; align-items: center; gap: 6px; margin-top: 9px; padding: 6px 0; color: var(--blue); background: transparent; border: 0; font-size: 0.72rem; font-weight: 760; cursor: pointer; }
+.scan-marking-toggle:hover { text-decoration: underline; text-underline-offset: 3px; }
 .scan-map-review-values { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 13px; }
 .scan-map-review-values span { display: grid; gap: 2px; color: var(--muted); font-size: 0.62rem; }
 .scan-map-review-values strong { color: var(--ink); font-family: var(--font-mono); font-size: 0.78rem; }

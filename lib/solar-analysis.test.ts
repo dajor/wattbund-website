@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createSolarScanTiles, estimateSolarScanTiles, safeSecretMatches } from "@/lib/solar-analysis";
+import { buildBayernDop20ImageUrl, createSolarScanTiles, estimateSolarScanTiles, safeSecretMatches } from "@/lib/solar-analysis";
 
 describe("solar analysis tiling", () => {
   const poing: [number, number, number, number] = [11.7694, 48.1501, 11.8417, 48.1860];
@@ -24,5 +24,21 @@ describe("solar scan callback secret", () => {
     expect(safeSecretMatches("secret", "secret")).toBe(true);
     expect(safeSecretMatches("wrong", "secret")).toBe(false);
     expect(safeSecretMatches(null, "secret")).toBe(false);
+  });
+});
+
+describe("solar review imagery", () => {
+  it("builds a high-resolution DOP20 request for a scan tile", () => {
+    const bounds: [number, number, number, number] = [11.8, 48.16, 11.804, 48.164];
+    const url = buildBayernDop20ImageUrl(bounds);
+    expect(url.hostname).toBe("geoservices.bayern.de");
+    expect(url.searchParams.get("LAYERS")).toBe("by_dop20c");
+    expect(url.searchParams.get("BBOX")).toBe(bounds.join(","));
+    expect(url.searchParams.get("WIDTH")).toBe("1024");
+    expect(url.searchParams.get("HEIGHT")).toBe("1024");
+  });
+
+  it("rejects imagery outside the supported area", () => {
+    expect(() => buildBayernDop20ImageUrl([7, 48, 7.1, 48.1])).toThrow("außerhalb Bayerns");
   });
 });
